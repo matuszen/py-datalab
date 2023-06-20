@@ -1,2 +1,56 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Configuration files
+*.ini text
+*.cfg text
+
+# Python sources
+*.py    text diff=python
+*.pxd   text diff=python
+*.pyx   text diff=python
+*.pyi   text diff=python
+
+# C/C++ sources
+*.c     text diff=c
+*.h     text diff=c
+*.cc    text diff=cpp
+*.cxx   text diff=cpp
+*.cpp   text diff=cpp
+*.hpp   text diff=cpp
+*.hh    text diff=cpp
+
+# Documents
+*.md    text diff=markdown
+*.txt   text
+*.pdf   binary
+*.css   text diff=css
+*.html  text diff=html
+
+# Graphics
+*.png   binary
+*.ico   binary
+*.dia   binary
+*.gif   binary
+*.odg   binary
+*.fig   text
+*.svg   text
+
+# Scripts
+*.sh    text eol=lf
+*.bat   text eol=crlf
+*.cmd   text eol=crlf
+
+# Serialisation
+*.json  text
+*.toml  text
+*.xml   text
+*.yaml  text
+*.yml   text
+
+# Data files
+*.csv   text
+*.pkl   binary
+*.fits  binary
+*.npy   binary
+*.npz   binary

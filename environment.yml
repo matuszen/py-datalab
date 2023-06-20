@@ -1,0 +1,4 @@
+name: DataLab
+
+dependencies:
+  - python=3.10
