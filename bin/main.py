@@ -7,8 +7,8 @@ class Matrix:
         shape: tuple[int, int],
         dtype: tuple = int,
     ) -> None:
-        self.reshape(shape)
-        self.dtype = dtype
+        self.__rows, self.__columns = shape
+        self.__dtype = dtype
 
         self.__precision = 4
 
@@ -79,18 +79,18 @@ class Matrix:
 
     def __setitem__(self, index: int, value: object) -> None:
         if isinstance(index, tuple) and len(index) == 2:
-            row, col = index
+            rows, columns = index
             if self.dtype == int:
-                self.__data[row][col] = int(value)
+                self.__data[rows][columns] = int(value)
 
             elif self.dtype == float:
-                self.__data[row][col] = float(value)
+                self.__data[rows][columns] = float(value)
 
             elif self.dtype == str:
-                self.__data[row][col] = str(value)
+                self.__data[rows][columns] = str(value)
 
             elif self.dtype == bool:
-                self.__data[row][col] = bool(value)
+                self.__data[rows][columns] = bool(value)
         else:
             if self.dtype == int:
                 self.__data[index] = int(value)
@@ -111,24 +111,41 @@ class Matrix:
 
         return self.__data[index]
 
-    def _initialize_data(self) -> None:
+    def _empty_element(self) -> int | float | str | bool:
         if self.dtype == float:
-            init_data = 0.0
+            return 0.0
 
         elif self.dtype == str:
-            init_data = ""
+            return ""
 
         elif self.dtype == bool:
-            init_data = False
+            return False
 
         else:
-            init_data = 0
+            return 0
+
+    def _initialize_data(self) -> None:
+        init_item = self._empty_element()
 
         self.__data = [
-            [init_data for _ in range(self.columns)] for _ in range(self.rows)
+            [init_item for _ in range(self.columns)] for _ in range(self.rows)
         ]
 
-        self.__size = self.shape[0] * self.shape[1]
+    def _adjust_dimensions(self) -> None:
+        buffer = self.__data.copy()
+
+        init_item = self._empty_element()
+
+        self.__data = [
+            [init_item for _ in range(self.columns)] for _ in range(self.rows)
+        ]
+
+        for i in range(self.rows):
+            for j in range(self.columns):
+                try:
+                    self.__data[i][j] = buffer[i][j]
+                except:
+                    continue
 
     def _change_data_type(self, new_dtype: type) -> None:
         temp_fun = lambda x: new_dtype(x)
@@ -138,12 +155,19 @@ class Matrix:
                 self.__data[i][j] = temp_fun(self.__data[i][j])
 
     @property
-    def shape(self) -> tuple[int, int]:
-        return self.__shape
+    def size(self) -> int:
+        return self.rows * self.columns
 
     @property
-    def size(self) -> int:
-        return self.__size
+    def shape(self) -> tuple[int, int]:
+        return self.rows, self.columns
+
+    @shape.setter
+    def shape(self, new_shape: tuple[int, int]) -> None:
+        if isinstance(new_shape, tuple):
+            self.rows, self.columns = new_shape
+        else:
+            raise ValueError("`dl.Matrix.shape` property must be a tuple of integers")
 
     @property
     def dtype(self) -> type:
@@ -164,6 +188,7 @@ class Matrix:
     def columns(self, new_value: int) -> None:
         if isinstance(new_value, int):
             self.__columns = new_value
+            self._adjust_dimensions()
         else:
             raise ValueError("`dl.Matrix.columns` property must be an integer")
 
@@ -175,6 +200,7 @@ class Matrix:
     def rows(self, new_value: int) -> None:
         if isinstance(new_value, int):
             self.__rows = new_value
+            self._adjust_dimensions()
         else:
             raise ValueError("`dl.Matrix.rows` property must be an integer")
 
@@ -190,8 +216,21 @@ class Matrix:
 
     def reshape(self, new_shape: tuple[int, int]) -> None:
         if isinstance(new_shape, tuple):
-            self.__shape = new_shape
-            self.rows = new_shape[0]
-            self.columns = new_shape[1]
+            self.rows, self.columns = new_shape
+            self._adjust_dimensions()
         else:
             raise ValueError("Matrix shape must be an tuple of integers")
+
+    def to_list(self) -> list[list[Optional[Union[int, float, str, bool]]]]:
+        return self.__data
+
+    def to_tuple(self) -> list[list[Optional[Union[int, float, str, bool]]]]:
+        buffer = [tuple() for _ in range(self.rows)]
+
+        for i, row in enumerate(self.__data):
+            buffer[i] = tuple(row)
+
+        return tuple(buffer)
+
+    def copy(self) -> list[list[Optional[Union[int, float, str, bool]]]]:
+        return self.__data
