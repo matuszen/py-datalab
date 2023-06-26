@@ -5,7 +5,7 @@ class Matrix:
     def __init__(
         self,
         shape: tuple[int, int],
-        dtype: tuple = int,
+        dtype: type = int,
     ) -> None:
         self.__rows, self.__columns = shape
         self.__dtype = dtype
@@ -221,10 +221,10 @@ class Matrix:
         else:
             raise ValueError("Matrix shape must be an tuple of integers")
 
-    def to_list(self) -> list[list[Optional[Union[int, float, str, bool]]]]:
+    def to_list(self) -> list[list[Union[int, float, str, bool]]]:
         return self.__data
 
-    def to_tuple(self) -> list[list[Optional[Union[int, float, str, bool]]]]:
+    def to_tuple(self) -> list[list[Union[int, float, str, bool]]]:
         buffer = [tuple() for _ in range(self.rows)]
 
         for i, row in enumerate(self.__data):
@@ -232,5 +232,5 @@ class Matrix:
 
         return tuple(buffer)
 
-    def copy(self) -> list[list[Optional[Union[int, float, str, bool]]]]:
+    def copy(self) -> list[list[Union[int, float, str, bool]]]:
         return self.__data

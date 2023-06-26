@@ -1,13 +1,18 @@
-from main import Matrix
+from Matrix import Matrix
+from Vector import Vector
 
-data = Matrix((5, 5), dtype=float)
+# data = Matrix((5, 5), dtype=float)
 
-data[0][1] = 1
-data[2][3] = 2
-data[4, 2] = 0.12312312313312213
+# data[0][1] = 1
+# data[2][3] = 2
+# data[4, 2] = 0.12312312313312213
 
-print(data)
+# print(data)
 
-data.columns -= 1
+# data.columns -= 1
 
-print(data.to_tuple())
+# print(data.to_tuple())
+
+vec = Vector(4, float)
+
+print(vec)
