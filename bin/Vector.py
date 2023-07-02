@@ -9,6 +9,7 @@ class Vector:
     ) -> None:
         self.__size = size
         self.__dtype = dtype
+        self.__supported_types = int, float, str, bool
 
         self.__precision = 4
 
@@ -34,21 +35,15 @@ class Vector:
 
                     elif splited_value[0] == "0" and splited_value[1] != "0":
                         if len(splited_value[1]) > self.__precision:
-                            formatted_value = "{:.{}e}".format(
-                                value, self.__precision
-                            )
+                            formatted_value = "{:.{}e}".format(value, self.__precision)
                         else:
                             formatted_value = f"0.{splited_value[1]}"
 
                     else:
                         if len(splited_value[1]) > self.__precision:
-                            formatted_value = "{:.{}e}".format(
-                                value, self.__precision
-                            )
+                            formatted_value = "{:.{}e}".format(value, self.__precision)
                         else:
-                            formatted_value = (
-                                f"{splited_value[0]}.{splited_value[1]}"
-                            )
+                            formatted_value = f"{splited_value[0]}.{splited_value[1]}"
 
             elif self.dtype == int:
                 formatted_value = str(value)
@@ -61,16 +56,12 @@ class Vector:
 
             buffer[i] = formatted_value
 
-        max_element_lengths = max(len(str(item)) for item in buffer)
+        max_element_length = max(len(str(item)) for item in buffer)
 
         output = ""
 
-        for row in buffer:
-            output += "| "
-            for value, max_length in zip(row, max_element_lengths):
-                output += f"{value}{' ' * (max_length - len(value) + 1)}"
-
-            output += "|\n"
+        for value in buffer:
+            output += f"| {value}{' ' * (max_element_length - len(value) + 1)}|\n"
 
         return output
 
@@ -106,18 +97,14 @@ class Vector:
     def _initialize_data(self) -> None:
         init_item = self._empty_element()
 
-        self.__data = [
-            init_item for _ in range(self.size)
-        ]
+        self.__data = [init_item for _ in range(self.size)]
 
     def _adjust_size(self) -> None:
         buffer = self.__data.copy()
 
         init_item = self._empty_element()
 
-        self.__data = [
-            init_item for _ in range(self.size)
-        ]
+        self.__data = [init_item for _ in range(self.size)]
 
         for i in range(self.size):
             try:
@@ -126,7 +113,22 @@ class Vector:
                 continue
 
     def _change_data_type(self, new_dtype: type) -> None:
-        temp_fun = lambda x: new_dtype(x)
+        if new_dtype not in self.__supported_types:
+            raise ValueError(
+                f"dl.Vector.dtype must take one of this value: {self.__supported_types}"
+            )
+
+        if new_dtype == float:
+            temp_fun = lambda x: float(x)
+
+        elif new_dtype == str:
+            temp_fun = lambda x: str(x)
+
+        elif new_dtype == bool:
+            temp_fun = lambda x: bool(x)
+
+        else:
+            temp_fun = lambda x: int(x)
 
         for i in range(self.size):
             self.__data[i] = temp_fun(self.__data[i])
@@ -164,16 +166,11 @@ class Vector:
         else:
             raise ValueError("Number precision must be an integer")
 
-    def to_list(self) -> list[list[Union[int, float, str, bool]]]:
+    def to_list(self) -> list[Union[int, float, str, bool]]:
         return self.__data
 
-    def to_tuple(self) -> list[list[Union[int, float, str, bool]]]:
-        buffer = [tuple() for _ in range(self.rows)]
+    def to_tuple(self) -> tuple[Union[int, float, str, bool]]:
+        return tuple(self.__data)
 
-        for i, row in enumerate(self.__data):
-            buffer[i] = tuple(row)
-
-        return tuple(buffer)
-
-    def copy(self) -> list[list[Union[int, float, str, bool]]]:
+    def copy(self) -> list[Union[int, float, str, bool]]:
         return self.__data

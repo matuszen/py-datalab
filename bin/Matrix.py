@@ -224,7 +224,7 @@ class Matrix:
     def to_list(self) -> list[list[Union[int, float, str, bool]]]:
         return self.__data
 
-    def to_tuple(self) -> list[list[Union[int, float, str, bool]]]:
+    def to_tuple(self) -> tuple[tuple[Union[int, float, str, bool]]]:
         buffer = [tuple() for _ in range(self.rows)]
 
         for i, row in enumerate(self.__data):

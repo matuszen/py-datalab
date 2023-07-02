@@ -1,6 +1,6 @@
 import sys
 from datetime import datetime
-from typing import Optional, Union, TextIO, overload
+from typing import Optional, Union, TextIO
 
 
 def log(
