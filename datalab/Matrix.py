@@ -87,6 +87,7 @@ class Matrix:
 
         for row in buffer:
             output += "│ "
+
             for value, max_length in zip(row, max_element_lengths):
                 output += f"{value}{' ' * (max_length - len(value) + 1)}"
 
