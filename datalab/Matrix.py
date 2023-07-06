@@ -195,7 +195,27 @@ class Matrix:
 
         return self
 
+    def __mul__(self, element: Union[Iterable, int, float, str, bool]):
+        if isinstance(element, Matrix):
+            if self.columns != element.rows:
+                raise ArithmeticError(
+                    "Cannot multiply matrices with incompatible dimensions"
+                )
+            self.__data = [
+                [
+                    sum(a * b for a, b in zip(row1, col2))
+                    for col2 in zip(*element.__data)
+                ]
+                for row1 in self.__data
+            ]
 
+        elif isinstance(element, (int, float, str, bool)):
+            self.__data = [[element * a for a in row] for row in self.__data]
+
+        else:
+            raise ValueError("Invalid operand for matrix multiplication")
+
+        return self
 
     def _estimate_data_type(
         self, data: list[list[Union[int, float, str, bool]]]
