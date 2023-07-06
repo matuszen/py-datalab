@@ -3,7 +3,7 @@ from utils import *
 
 class Matrix:
     @overload
-    def __init__(self, object) -> None:
+    def __init__(self, object: Iterable) -> None:
         pass
 
     @overload
@@ -12,16 +12,22 @@ class Matrix:
 
     def __init__(
         self,
-        object,
-        shape: tuple[int, int],
+        object: Iterable = None,
+        shape: tuple[int, int] = None,
         dtype: type = int,
     ) -> None:
-        self.__rows, self.__columns = shape
-        self.__dtype = dtype
+        if object is not None:
+            # Handle initialization with an iterable object
+            pass
+
+        if shape is not None:
+            self.__rows, self.__columns = shape
+            self.__dtype = dtype
+            self._initialize_data()
+
 
         self.__precision = 4
 
-        self._initialize_data()
 
     def __str__(self) -> str:
         buffer = [[" " for _ in range(self.columns)] for _ in range(self.rows)]
@@ -119,6 +125,36 @@ class Matrix:
             return self.__data[rows][columns]
 
         return self.__data[index]
+    
+    def _estimate_data_type(self, data: list[list[Union[int, float, str, bool]]]) -> str:
+        type_counts = {'int': 0, 'float': 0, 'str': 0, 'bool': 0}
+
+        for row in data:
+            for element in row:
+                if isinstance(element, int):
+                    type_counts['int'] += 1
+                elif isinstance(element, float):
+                    type_counts['float'] += 1
+                elif isinstance(element, str):
+                    type_counts['str'] += 1
+                elif isinstance(element, bool):
+                    type_counts['bool'] += 1
+
+        if type_counts['int'] > 0 and type_counts['float'] > 0:
+            return 'float'
+        else:
+            return max(type_counts, key=type_counts.get)
+    
+    def _estimate_shape(self, object: Iterable) -> tuple[int, int]:
+        rows_count = len(object)
+        buffer = [0 for _ in range(rows_count)]
+
+        for i, row in enumerate(object):
+            buffer[i] = len(row)
+        
+        if not all(element == buffer[0] for element in buffer):
+
+
 
     def _empty_element(self) -> int | float | str | bool:
         if self.dtype == float:
