@@ -6,7 +6,7 @@ This project provides classes for working with data in python. Actually there ar
 
 Before running this script, make sure you have the following requirements fulfilled:
 
-- Python 3.6 or higher
+- Python 3.10 or higher
 
 ## Installation
 

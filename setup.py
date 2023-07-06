@@ -1,8 +1,8 @@
 import sys
 from setuptools import setup, find_packages
 
-if sys.version_info < (3, 6):
-    sys.exit("Sorry, Python < 3.6 is not supported")
+if sys.version_info < (3, 10):
+    sys.exit("Sorry, Python < 3.10 is not supported")
 
 setup(
     name="py-datalab",
@@ -16,10 +16,6 @@ setup(
         "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
         "Programming Language :: Python :: 3.11",
         "Programming Language :: Python :: 3 :: Only",
