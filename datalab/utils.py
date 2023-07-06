@@ -1,7 +1,10 @@
 from typing import (
-    Optional,
-    Union,
-    TextIO,
     Iterable,
+    Optional,
+    TypeVar,
+    TextIO,
+    Union,
     overload,
 )
+
+TypeVar("Subscriptable")

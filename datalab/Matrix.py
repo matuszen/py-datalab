@@ -91,7 +91,7 @@ class Matrix:
             max(len(str(row[i])) for row in buffer) for i in range(len(buffer[0]))
         )
 
-        output = ""
+        output = "\n"
 
         for row in buffer:
             output += "│ "
@@ -148,6 +148,33 @@ class Matrix:
             raise ValueError(
                 "The index you are referring to must be of the form: object[int][int], or object[int, int]"
             )
+
+    def __add__(self, element: Iterable):
+        def matrix_addition(A: Iterable, B: Iterable) -> Iterable:
+            return [[a + b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
+
+        if isinstance(element, Matrix):
+            if self.shape == element.shape:
+                self.__data = matrix_addition(self.__data, element)
+            else:
+                raise ArithmeticError(
+                    "Adding matrices requires that both have the same shape"
+                )
+
+        elif isinstance(element, (list, tuple)):
+            if len(element) != self.rows or any(
+                len(row) != self.columns for row in element
+            ):
+                raise ArithmeticError(
+                    "Adding matrices requires that both have the same shape"
+                )
+
+            self.__data = matrix_addition(self.__data, element)
+
+        else:
+            raise ValueError("You can only add matrix to other matrix")
+
+        return self
 
     def _estimate_data_type(
         self, data: list[list[Union[int, float, str, bool]]]
