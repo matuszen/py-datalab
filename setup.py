@@ -11,8 +11,8 @@ setup(
     author_email="mateusz.nowak.pol@gmail.com",
     description="This project provides classes for working with data in python. Actually there are two classes: Matrix and Vector.",
     url="https://github.com/matuszen/Python-DataLab",
-    packages=find_packages(where="bin"),
-    package_dir={"": "bin"},
+    packages=find_packages(where="datalab"),
+    package_dir={"": "datalab"},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
