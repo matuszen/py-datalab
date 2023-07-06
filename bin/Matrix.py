@@ -2,8 +2,17 @@ from utils import *
 
 
 class Matrix:
+    @overload
+    def __init__(self, object) -> None:
+        pass
+
+    @overload
+    def __init__(self, shape: tuple[int, int], dtype: type = int) -> None:
+        pass
+
     def __init__(
         self,
+        object,
         shape: tuple[int, int],
         dtype: type = int,
     ) -> None:
