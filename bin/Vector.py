@@ -2,18 +2,29 @@ from utils import *
 
 
 class Vector:
+    @overload
+    def __init__(self, object: Iterable) -> None:
+        pass
+
+    @overload
+    def __init__(self, size: int, dtype: Optional[type] = int) -> None:
+        pass
+
     def __init__(
         self,
-        size: int,
-        dtype: type = int,
+        arg1: Optional[Union[Iterable, int]],
+        arg2: Optional[type] = int,
     ) -> None:
-        self.__size = size
-        self.__dtype = dtype
+        if isinstance(arg1, int):
+            self.__size = arg1
+            self.__dtype = arg2
+            self._initialize_data_structure(size=arg1, dtype=arg2)
+
+        else:
+            self._initialize_data_structure(object=arg1)
+
         self.__supported_types = int, float, str, bool
-
         self.__precision = 4
-
-        self._initialize_data()
 
     def __str__(self) -> str:
         buffer = [" " for _ in range(self.size)]
@@ -27,7 +38,7 @@ class Vector:
                         formatted_value = f"0."
 
                     else:
-                        formatted_value = f"{splited_value[0]}.0"
+                        formatted_value = f"{splited_value[0]}."
 
                 if len(splited_value) == 2:
                     if splited_value[0] == "0" and splited_value[1] == "0":
@@ -38,6 +49,9 @@ class Vector:
                             formatted_value = "{:.{}e}".format(value, self.__precision)
                         else:
                             formatted_value = f"0.{splited_value[1]}"
+
+                    elif splited_value[0] != "0" and splited_value[1] == "0":
+                        formatted_value = f"{splited_value[0]}."
 
                     else:
                         if len(splited_value[1]) > self.__precision:
@@ -94,10 +108,56 @@ class Vector:
         else:
             return 0
 
-    def _initialize_data(self) -> None:
-        init_item = self._empty_element()
+    def _estimate_data_type(self, object: Iterable) -> type:
+        type_counts = {int: 0, float: 0, str: 0, bool: 0}
 
-        self.__data = [init_item for _ in range(self.size)]
+        for element in object:
+            if isinstance(element, int):
+                type_counts[int] += 1
+            elif isinstance(element, float):
+                type_counts[float] += 1
+            elif isinstance(element, str):
+                type_counts[str] += 1
+            elif isinstance(element, bool):
+                type_counts[bool] += 1
+
+        if type_counts[int] > 0 and type_counts[float] > 0:
+            return float
+        else:
+            return max(type_counts, key=type_counts.get)
+
+    def _fill_data(self, object: Optional[Iterable] = None) -> None:
+        empty_element = self._empty_element()
+
+        self.__data = [empty_element for _ in range(self.size)]
+
+        if object is not None:
+            for i, element in enumerate(object):
+                try:
+                    self.__data[i] = element
+                except IndexError:
+                    self.__data[i] = empty_element
+
+    def _initialize_data_structure(
+        self,
+        object: Optional[Iterable] = None,
+        size: Optional[int] = None,
+        dtype: Optional[type] = None,
+    ) -> None:
+        if object is not None:
+            self.__size = len(object)
+            self.__dtype = self._estimate_data_type(object)
+            self._fill_data(object)
+
+        elif size is not None:
+            self.__size = size
+            self.__dtype = dtype
+            self._fill_data()
+
+        else:
+            raise ValueError(
+                "Matrix._initilize_data_structure() has recived wrong parameters"
+            )
 
     def _adjust_size(self) -> None:
         buffer = self.__data.copy()
@@ -117,21 +177,7 @@ class Vector:
             raise ValueError(
                 f"dl.Vector.dtype must take one of this value: {self.__supported_types}"
             )
-
-        if new_dtype == float:
-            temp_fun = lambda x: float(x)
-
-        elif new_dtype == str:
-            temp_fun = lambda x: str(x)
-
-        elif new_dtype == bool:
-            temp_fun = lambda x: bool(x)
-
-        else:
-            temp_fun = lambda x: int(x)
-
-        for i in range(self.size):
-            self.__data[i] = temp_fun(self.__data[i])
+        self.__data = list(map(new_dtype, self.__data))
 
     @property
     def size(self) -> int:
