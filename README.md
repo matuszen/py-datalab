@@ -1,4 +1,4 @@
-# Python DataLab
+# py-datalab
 
 This project provides classes for working with data in python. Actually there are two classes: Matrix and Vector.
 
@@ -10,7 +10,13 @@ Before running this script, make sure you have the following requirements fulfil
 
 ## Installation
 
-Clone or download the repository to your local machine:
+To work in your python project you only need to install it via pip:
+
+```shell
+pip install py-datalab
+```
+
+Or, to work on repository on your local machine:
 
 ```shell
 git clone https://github.com/matuszen/Python-DataLab.git
@@ -22,13 +28,23 @@ You don't need to install any other python packages.
 
 The Matrix class represents a matrix and provides various operations and methods to work with matrices. Here are the main features of the Matrix class:
 
+### Import
+
+```python
+import datalab as dl
+```
+
 ### Initialization
 
 To create a new matrix, you need to provide the shape (number of rows and columns) and an optional data type. The default data type is int. Here's an example of creating a matrix:
 
 ```python
-matrix = Matrix(shape=(3, 3), dtype=int)
-vector = Vector(size=4, dtype=float)
+matrix = dl.Matrix(shape=(3, 3), dtype=int)
+# Lib validates shape correctly, regardless of the size of the all lists
+matrix = dl.Matrix([[1, 2, 3], [5, 3], [2, 5, 3]])
+
+vector = dl.Vector(size=4, dtype=float)
+vector = dl.Vector([1, 2, 3, 4, 5])
 ```
 
 ### Setting and Getting Elements
