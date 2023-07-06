@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Optional, Union, TextIO, Iterable, overload
 
 
-def log(
+def _log(
     *values: object,
     type: Optional[Union[str, None]] = "info",
     show_time: Optional[Union[bool, None]] = True,
@@ -57,7 +57,7 @@ def log(
         write_output(sys.stderr)
 
 
-def log_warning(
+def _log_warning(
     *values: object,
     separator: Optional[Union[str, None]] = " ",
     ending: Optional[Union[str, None]] = "\n",
@@ -91,7 +91,7 @@ def log_warning(
     sys.stderr.flush()
 
 
-def log_error(
+def _log_error(
     *values: object,
     separator: Optional[Union[str, None]] = " ",
     ending: Optional[Union[str, None]] = "\n",
