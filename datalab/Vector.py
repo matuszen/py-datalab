@@ -1,24 +1,24 @@
-from .utils import *
+from datalab.utils import *
 
 
 class Vector:
     @overload
-    def __init__(self, object: Iterable) -> None:
+    def __init__(self, size: int, dtype: Optional[type] = int) -> None:
         pass
 
     @overload
-    def __init__(self, size: int, dtype: Optional[type] = int) -> None:
+    def __init__(self, object: Iterable) -> None:
         pass
 
     def __init__(
         self,
         arg1: Optional[Union[Iterable, int]],
-        arg2: Optional[type] = int,
+        dtype: Optional[type] = int,
     ) -> None:
         if isinstance(arg1, int):
             self.__size = arg1
-            self.__dtype = arg2
-            self._initialize_data_structure(size=arg1, dtype=arg2)
+            self.__dtype = dtype
+            self._initialize_data_structure(size=arg1, dtype=dtype)
 
         else:
             self._initialize_data_structure(object=arg1)
@@ -75,27 +75,26 @@ class Vector:
         output = ""
 
         for value in buffer:
-            output += f"│ {value}{' ' * (max_element_length - len(value) + 1)} │\n"
+            output += f"│ {value}{' ' * (max_element_length - len(value) + 1)}│\n"
 
         return output
 
-    def __setitem__(self, index: int, value: object) -> None:
-        if self.dtype == int:
-            self.__data[index] = int(value)
+    def __setitem__(self, index: int, value: Union[int, float, str, bool]) -> None:
+        if not isinstance(index, int):
+            raise ValueError("Index value must be an integer")
 
-        elif self.dtype == float:
-            self.__data[index] = float(value)
-
-        elif self.dtype == str:
-            self.__data[index] = str(value)
-
-        elif self.dtype == bool:
-            self.__data[index] = bool(value)
+        for supported_type in self.__supported_types:
+            if self.dtype == supported_type:
+                self.__data[index] = supported_type(value)
+                break
 
     def __getitem__(self, index: int) -> object:
+        if not isinstance(index, int):
+            raise ValueError("Index value must be an integer")
+
         return self.__data[index]
 
-    def _empty_element(self) -> int | float | str | bool:
+    def _empty_element(self) -> Union[int, float, str, bool]:
         if self.dtype == float:
             return 0.0
 

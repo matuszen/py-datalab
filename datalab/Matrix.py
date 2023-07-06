@@ -1,26 +1,34 @@
-from .utils import *
+from datalab.utils import *
 
 
 class Matrix:
     @overload
-    def __init__(self, object: Iterable) -> None:
+    def __init__(self, rows: int, columns: int, dtype: type = int) -> None:
         pass
 
     @overload
     def __init__(self, shape: tuple[int, int], dtype: type = int) -> None:
         pass
 
+    @overload
+    def __init__(self, object: Iterable) -> None:
+        pass
+
     def __init__(
         self,
         arg1: Optional[Union[Iterable, tuple[int, int]]] = None,
-        arg2: Optional[type] = int,
+        arg2: Optional[Union[int, type]] = None,
+        dtype: Optional[type] = int,
     ) -> None:
         if (
             isinstance(arg1, tuple)
             and len(arg1) == 2
             and (isinstance(arg1[0], int) and isinstance(arg1[1], int))
         ):
-            self._initialize_data_structure(shape=arg1, dtype=arg2)
+            self._initialize_data_structure(shape=arg1, dtype=dtype)
+
+        elif isinstance(arg1, int) and isinstance(arg2, int):
+            self._initialize_data_structure(shape=(arg1, arg2), dtype=dtype)
 
         else:
             self._initialize_data_structure(object=arg1)
@@ -95,39 +103,51 @@ class Matrix:
 
         return output
 
-    def __setitem__(self, index: int, value: object) -> None:
-        if isinstance(index, tuple) and len(index) == 2:
-            rows, columns = index
-            if self.dtype == int:
-                self.__data[rows][columns] = int(value)
-
-            elif self.dtype == float:
-                self.__data[rows][columns] = float(value)
-
-            elif self.dtype == str:
-                self.__data[rows][columns] = str(value)
-
-            elif self.dtype == bool:
-                self.__data[rows][columns] = bool(value)
+    def __setitem__(
+        self, index: Union[tuple, int], value: Union[int, float, str, bool]
+    ) -> None:
+        if (
+            isinstance(index, tuple)
+            and isinstance(index[0], int)
+            and isinstance(index[1], int)
+            and len(index) == 2
+        ):
+            row, column = index
+        elif isinstance(index, int):
+            row = index
+            column = None
         else:
-            if self.dtype == int:
-                self.__data[index] = int(value)
+            raise ValueError(
+                "The index you are referring to must be of the form: object[int][int], or object[int, int]"
+            )
 
-            elif self.dtype == float:
-                self.__data[index] = float(value)
+        for supported_type in self.__supported_types:
+            if self.dtype == supported_type:
+                converted_value = supported_type(value)
+                break
 
-            elif self.dtype == str:
-                self.__data[index] = str(value)
+        if column is not None:
+            self.__data[row][column] = converted_value
+        else:
+            self.__data[row] = converted_value
 
-            elif self.dtype == bool:
-                self.__data[index] = bool(value)
-
-    def __getitem__(self, index: int) -> object:
-        if isinstance(index, tuple) and len(index) == 2:
+    def __getitem__(self, index: Union[tuple, int]) -> Union[int, float, str, bool]:
+        if (
+            isinstance(index, tuple)
+            and isinstance(index[0], int)
+            and isinstance(index[1], int)
+            and len(index) == 2
+        ):
             rows, columns = index
             return self.__data[rows][columns]
-        else:
+
+        elif isinstance(index, int):
             return self.__data[index]
+
+        else:
+            raise ValueError(
+                "The index you are referring to must be of the form: object[int][int], or object[int, int]"
+            )
 
     def _estimate_data_type(
         self, data: list[list[Union[int, float, str, bool]]]
@@ -290,12 +310,37 @@ class Matrix:
         else:
             raise ValueError("Number precision must be an integer")
 
+    @overload
+    def reshape(self, rows: int, columns: int) -> None:
+        pass
+
+    @overload
     def reshape(self, new_shape: tuple[int, int]) -> None:
-        if isinstance(new_shape, tuple):
-            self.rows, self.columns = new_shape
+        pass
+
+    def reshape(
+        self,
+        arg1: Optional[Union[tuple[int, int], int]] = None,
+        arg2: Optional[int] = None,
+    ) -> None:
+        if (
+            arg2 is None
+            and isinstance(arg1, tuple)
+            and isinstance(arg1[0], int)
+            and isinstance(arg1[1], int)
+            and len(arg1) == 2
+        ):
+            self.rows, self.columns = arg1
             self._adjust_dimensions()
+
+        elif isinstance(arg1, int) and isinstance(arg2, int):
+            self.rows, self.columns = arg1, arg2
+            self._adjust_dimensions()
+
         else:
-            raise ValueError("Matrix shape must be an tuple of integers")
+            raise ValueError(
+                "Shape must be tuple of integers, or both rows and columns must be integers"
+            )
 
     def to_list(self) -> list[list[Union[int, float, str, bool]]]:
         return self.__data

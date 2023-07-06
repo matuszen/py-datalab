@@ -39,11 +39,12 @@ import datalab as dl
 To create a new matrix, you need to provide the shape (number of rows and columns) and an optional data type. The default data type is int. Here's an example of creating a matrix:
 
 ```python
-matrix = dl.Matrix(shape=(3, 3), dtype=int)
-# Lib validates shape correctly, regardless of the size of the all lists
+matrix = dl.Matrix(3, 3, dtype=int)
+matrix = dl.Matrix((3, 3), dtype=int)
 matrix = dl.Matrix([[1, 2, 3], [5, 3], [2, 5, 3]])
+# Lib validates shape correctly, regardless of the size of the all lists
 
-vector = dl.Vector(size=4, dtype=float)
+vector = dl.Vector(4, dtype=float)
 vector = dl.Vector([1, 2, 3, 4, 5])
 ```
 
@@ -53,11 +54,15 @@ You can set and get individual elements of the matrix using the square bracket n
 
 ```python
 # Set an element
+matrix[0][0] = 1
 matrix[0, 0] = 1
+
 vector[1] = 3.0
 
 # Get an element
+element = matrix[0][0]
 element = matrix[0, 0]
+
 element = vector[1]
 ```
 
@@ -67,7 +72,7 @@ You can change the data type of the matrix using the change_dtype method. The ne
 
 ```python
 matrix.change_dtype(bool)
-vactor.change_dtype(int)
+vector.change_dtype(int)
 
 # Or make it via property
 matrix.dtype = bool
@@ -80,6 +85,8 @@ You can change the shape of the matrix using the reshape method. It takes a tupl
 
 ```python
 matrix.reshape((2, 4))
+matrix.reshape(2, 4)
+
 vector.size = 5
 
 # You can also modify shape using `rows`, `columns` and `size` property

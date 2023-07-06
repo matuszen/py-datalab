@@ -1,2 +1,2 @@
-from .Matrix import Matrix
-from .Vector import Vector
+from datalab.Matrix import Matrix
+from datalab.Vector import Vector
