@@ -6,15 +6,14 @@ if sys.version_info < (3, 6):
 
 setup(
     name="py-datalab",
-    version="0.1.0",
+    version="0.1.4",
     author="Mateusz Nowak",
     author_email="mateusz.nowak.pol@gmail.com",
     description="This project provides classes for working with data in python. Actually there are two classes: Matrix and Vector.",
     url="https://github.com/matuszen/Python-DataLab",
-    packages=find_packages(where="datalab"),
-    package_dir={"": "datalab"},
+    packages=find_packages(),
     classifiers=[
-        "Development Status :: 5 - Production/Stable",
+        "Development Status :: 3 - Alpha",
         "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
