@@ -61,7 +61,7 @@ class Vector:
         output = ""
 
         for value in buffer:
-            output += f"| {value}{' ' * (max_element_length - len(value) + 1)}|\n"
+            output += f"│ {value}{' ' * (max_element_length - len(value) + 1)}│\n"
 
         return output
 
