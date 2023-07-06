@@ -1,2 +1,2 @@
-# from Matrix import Matrix
-# from Vector import Vector
+from Matrix import Matrix
+from Vector import Vector
