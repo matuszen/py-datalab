@@ -157,24 +157,45 @@ class Matrix:
             if self.shape == element.shape:
                 self.__data = matrix_addition(self.__data, element)
             else:
-                raise ArithmeticError(
-                    "Adding matrices requires that both have the same shape"
-                )
+                raise ArithmeticError("Cannot add matrices with different shapes")
 
         elif isinstance(element, (list, tuple)):
             if len(element) != self.rows or any(
                 len(row) != self.columns for row in element
             ):
-                raise ArithmeticError(
-                    "Adding matrices requires that both have the same shape"
-                )
+                raise ArithmeticError("Cannot add matrices with different shapes")
 
             self.__data = matrix_addition(self.__data, element)
 
         else:
-            raise ValueError("You can only add matrix to other matrix")
+            raise ValueError("You can only add matrix to another matrix")
 
         return self
+
+    def __sub__(self, element: Iterable):
+        def matrix_subtraction(A: Iterable, B: Iterable) -> Iterable:
+            return [[a - b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
+
+        if isinstance(element, Matrix):
+            if self.shape == element.shape:
+                self.__data = matrix_subtraction(self.__data, element)
+            else:
+                raise ArithmeticError("Cannot subtract matrices with different shapes")
+
+        elif isinstance(element, (list, tuple)):
+            if len(element) != self.rows or any(
+                len(row) != self.columns for row in element
+            ):
+                raise ArithmeticError("Cannot subtract matrices with different shapes")
+
+            self.__data = matrix_subtraction(self.__data, element)
+
+        else:
+            raise ValueError("You can only subtract a matrix from another matrix")
+
+        return self
+
+
 
     def _estimate_data_type(
         self, data: list[list[Union[int, float, str, bool]]]
