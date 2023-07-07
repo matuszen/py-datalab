@@ -6,13 +6,30 @@ class Vector:
     def __init__(
         self,
         size: int,
-        dtype: Optional[type] = int,
-        fill: Optional[Union[int, float, str, bool]] = 0,
+        dtype: type = int,
+        fill: Union[int, float, str, bool] = 0,
     ) -> None:
+        """Initializes a vector with the specified size, data type, and fill value.
+
+        Parameters
+        ----------
+        size : int
+            Size of the vector.
+        dtype : type, optional
+            Data type of the vector elements. Default is int.
+        fill : int or float or str or bool, optional
+            Value used to fill the vector. Default is 0"""
+
         pass
 
     @overload
     def __init__(self, object: Iterable) -> None:
+        """Initializes a vector from an iterable object.
+
+        Parameters
+        ----------
+        object : Iterable
+            Iterable object containing the data for the vector"""
         pass
 
     def __init__(
@@ -285,6 +302,7 @@ class Vector:
 
     @property
     def size(self) -> int:
+        """Vector's length (number of elements)"""
         return self.__size
 
     @size.setter
@@ -297,6 +315,8 @@ class Vector:
 
     @property
     def dtype(self) -> type:
+        """Store element's current type"""
+
         return self.__dtype
 
     @dtype.setter
@@ -307,28 +327,68 @@ class Vector:
             raise ValueError("`dl.Vector.dtype` property must be an type object")
 
     def fill(self, value: Union[int, float, str, bool]) -> Self:
+        """Fills the vector with the specified value.
+
+        Parameters
+        ----------
+        value : int or float or str or bool
+            Value to fill the vector with"""
+
+        if not has_same_type(self.dtype, value):
+            value = convert(value, self.dtype)
+
         for i in range(self.size):
             self.__data[i] = value
 
         return self
 
     def change_dtype(self, new_dtype: type) -> Self:
+        """Changes the data type of the vector.
+
+        Parameters
+        ----------
+        new_dtype : type
+            The new data type for the vector"""
+
         self.dtype = new_dtype
         self._change_data_type(new_dtype)
 
         return self
 
     def set_precision(self, new_precision: int) -> None:
+        """Sets the precision for numerical values in the vector.
+
+        Parameters
+        ----------
+        new_precision : int
+            The new precision value to set for numerical values.
+
+        Raises
+        ------
+        ValueError
+            If the provided precision is not an integer"""
+
         if isinstance(new_precision, int):
             self.__precision = new_precision
         else:
             raise ValueError("Number precision must be an integer")
 
     def to_list(self) -> list[Union[int, float, str, bool]]:
+        """Converts the vector to a Python list"""
+
         return self.__data
 
     def to_tuple(self) -> tuple[Union[int, float, str, bool]]:
+        """Converts the vector to a Python tuple"""
+
         return tuple(self.__data)
 
     def copy(self) -> Self:
+        """Creates a copy of the vector"""
+
+        return copy.copy(self)
+
+    def deep_copy(self) -> Self:
+        """Creates a deep copy of the vector"""
+
         return copy.deepcopy(self)
