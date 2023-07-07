@@ -46,13 +46,19 @@ class Matrix:
         pass
 
     @overload
-    def __init__(self, object: Iterable) -> None:
+    def __init__(
+        self,
+        object: Iterable,
+        dtype: type = int,
+    ) -> None:
         """Initializes a new matrix from an iterable object.
 
         Parameters
         ----------
         object : Iterable
-            An iterable object containing the matrix elements"""
+            An iterable object containing the matrix elements
+        dtype : type, optional
+            The data type of the matrix elements (default: int)"""
 
         pass
 
@@ -76,7 +82,7 @@ class Matrix:
         elif isinstance(arg1, (list, tuple)) and all(
             isinstance(sublist, (list, tuple)) for sublist in arg1
         ):
-            self._initialize_data_structure(object=arg1)
+            self._initialize_data_structure(object=arg1, dtype=dtype)
 
         else:
             raise ValueError("Wrong parameters in Matrix initialization")
@@ -521,27 +527,27 @@ class Matrix:
         else:
             raise ValueError("Number precision must be an integer")
 
-    def identity(self) -> Self:
-        """Creates an identity matrix.
+    def is_identity(self) -> bool:
+        """Checks if the current matrix is an identity matrix.
 
-        An identity matrix is a square matrix with ones on the main diagonal and zeros elsewhere.
-        The size of the identity matrix is determined by the maximum of the number of rows and columns of the current matrix.
+        Returns
+        -------
+        bool
+            True if the matrix is an identity matrix, False otherwise"""
 
-        Raises
-        ------
-        ValueError
-            If the size of the matrix is not a positive integer."""
+        if self.rows != self.columns:
+            return False
 
-        size = self.rows if self.rows > self.columns else self.columns
+        for i in range(self.rows):
+            for j in range(self.rows):
+                if i == j:
+                    if self[i, j] != 1:
+                        return False
+                else:
+                    if self[i, j] != 0:
+                        return False
 
-        if size <= 0:
-            raise ValueError("Size must be a positive integer")
-
-        data = [[1 if i == j else 0 for j in range(size)] for i in range(size)]
-
-        return Matrix(data)
-
-    # def is_identity(self) -> bool:
+        return True
 
     def transpoze(self) -> Self:
         """Transposes the matrix.
