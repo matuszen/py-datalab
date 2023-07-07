@@ -1,5 +1,6 @@
-from typing_extensions import Self
+import copy
 
+from typing_extensions import Self
 from typing import (
     Iterable,
     Optional,

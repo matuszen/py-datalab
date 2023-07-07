@@ -22,7 +22,7 @@ Or, to work on repository on your local machine:
 git clone https://github.com/matuszen/Python-DataLab.git
 ```
 
-You don't need to install any other python packages.
+Depend on your python version you need to install typing_extensions package
 
 ## Usage
 
