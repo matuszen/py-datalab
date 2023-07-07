@@ -3,7 +3,12 @@ from datalab.utils import *
 
 class Vector:
     @overload
-    def __init__(self, size: int, dtype: Optional[type] = int) -> None:
+    def __init__(
+        self,
+        size: int,
+        dtype: Optional[type] = int,
+        fill: Optional[Union[int, float, str, bool]] = 0,
+    ) -> None:
         pass
 
     @overload
@@ -14,11 +19,12 @@ class Vector:
         self,
         arg1: Optional[Union[Iterable, int]],
         dtype: Optional[type] = int,
+        fill: Optional[Union[int, float, str, bool]] = 0,
     ) -> None:
         if isinstance(arg1, int):
             self.__size = arg1
             self.__dtype = dtype
-            self._initialize_data_structure(size=arg1, dtype=dtype)
+            self._initialize_data_structure(size=arg1, dtype=dtype, fill=fill)
 
         else:
             self._initialize_data_structure(object=arg1)
@@ -80,69 +86,96 @@ class Vector:
         return output
 
     def __add__(self, element: Iterable) -> Self:
+        buffer = self.copy()
+
         def vector_addition(A: Iterable, B: Iterable) -> Iterable:
             return [a + b for a, b in zip(A, B)]
 
         if isinstance(element, Vector):
-            if self.size == element.size:
-                self.__data = vector_addition(self.__data, element)
+            if buffer.size == element.size:
+                buffer.__data = vector_addition(buffer.__data, element)
             else:
                 raise ArithmeticError("Cannot add vectors with different sizes")
 
         elif isinstance(element, (list, tuple)):
-            if len(element) != self.size:
+            if len(element) != buffer.size:
                 raise ArithmeticError("Cannot add vectors with different sizes")
 
-            self.__data = vector_addition(self.__data, element)
+            buffer.__data = vector_addition(buffer.__data, element)
 
         else:
             raise ValueError("You can only add vector to another vector, list or tuple")
 
-        return self
+        return buffer
 
     def __sub__(self, element: Iterable) -> Self:
+        buffer = self.copy()
+
         def vector_subtraction(A: Iterable, B: Iterable) -> Iterable:
             return [a - b for a, b in zip(A, B)]
 
         if isinstance(element, Vector):
-            if self.size == element.size:
-                self.__data = vector_subtraction(self.__data, element)
+            if buffer.size == element.size:
+                buffer.__data = vector_subtraction(buffer.__data, element)
             else:
                 raise ArithmeticError("Cannot subtract vectors with different sizes")
 
         elif isinstance(element, (list, tuple)):
-            if len(element) != self.size:
+            if len(element) != buffer.size:
                 raise ArithmeticError("Cannot subtract vectors with different sizes")
 
-            self.__data = vector_subtraction(self.__data, element)
+            buffer.__data = vector_subtraction(buffer.__data, element)
 
         else:
             raise ValueError(
                 "You can only subtract a vector from another vector, list or tuple"
             )
 
-        return self
+        return buffer
 
     def __mul__(self, element: Iterable) -> Self:
+        buffer = self.copy()
+
         if isinstance(element, Vector):
-            if self.size != element.size:
+            if buffer.size != element.size:
                 raise ArithmeticError("Cannot multiply vectors with different sizes")
 
-            self.__data = [a * b for a, b in zip(self.__data, element.__data)]
+            buffer.__data = [a * b for a, b in zip(buffer.__data, element.__data)]
 
         elif isinstance(element, (list, tuple)):
-            if self.size != len(element):
+            if buffer.size != len(element):
                 raise ArithmeticError("Cannot multiply vectors with different sizes")
 
-            self.__data = [a * b for a, b in zip(self.__data, element)]
+            buffer.__data = [a * b for a, b in zip(buffer.__data, element)]
 
         elif isinstance(element, (int, float, str, bool)):
-            self.__data = [element * a for a in self.__data]
+            buffer.__data = [element * a for a in buffer.__data]
 
         else:
             raise ValueError("Invalid operand for vector multiplication")
 
-        return self
+        return buffer
+
+    def __pow__(self, exponent: int) -> Self:
+        buffer = self.copy()
+
+        if not isinstance(exponent, int):
+            raise ValueError(
+                "Vector exponentiation is only supported for integer exponents"
+            )
+
+        if exponent < 0:
+            raise ValueError(
+                "Vector exponentiation is not supported for negative exponents"
+            )
+
+        if exponent == 0:
+            return Vector(buffer.size, dtype=buffer.dtype, fill=1)
+
+        for _ in range(exponent - 1):
+            buffer *= self
+
+        return buffer
 
     def __setitem__(self, index: int, value: Union[int, float, str, bool]) -> None:
         if not isinstance(index, int):
@@ -190,8 +223,12 @@ class Vector:
         else:
             return max(type_counts, key=type_counts.get)
 
-    def _fill_data(self, object: Optional[Iterable] = None) -> None:
-        empty_element = self._empty_element()
+    def _fill_data(
+        self,
+        object: Optional[Iterable] = None,
+        fill: Optional[Union[int, float, str, bool]] = None,
+    ) -> None:
+        empty_element = self._empty_element() if fill is None else fill
 
         self.__data = [empty_element for _ in range(self.size)]
 
@@ -207,16 +244,19 @@ class Vector:
         object: Optional[Iterable] = None,
         size: Optional[int] = None,
         dtype: Optional[type] = None,
+        fill: Optional[Union[int, float, str, bool]] = None,
     ) -> None:
         if object is not None:
             self.__size = len(object)
             self.__dtype = self._estimate_data_type(object)
-            self._fill_data(object)
+
+            self._fill_data(object=object, fill=fill)
 
         elif size is not None:
             self.__size = size
             self.__dtype = dtype
-            self._fill_data()
+
+            self._fill_data(fill=fill)
 
         else:
             raise ValueError(
@@ -266,6 +306,12 @@ class Vector:
         else:
             raise ValueError("`dl.Vector.dtype` property must be an type object")
 
+    def fill(self, value: Union[int, float, str, bool]) -> Self:
+        for i in range(self.size):
+            self.__data[i] = value
+
+        return self
+
     def change_dtype(self, new_dtype: type) -> Self:
         self.dtype = new_dtype
         self._change_data_type(new_dtype)
@@ -285,4 +331,4 @@ class Vector:
         return tuple(self.__data)
 
     def copy(self) -> Self:
-        return self
+        return copy.deepcopy(self)
