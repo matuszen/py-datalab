@@ -10,6 +10,19 @@ class Matrix:
         dtype: type = int,
         fill: Union[int, float, str, bool] = 0,
     ) -> None:
+        """Initializes a new matrix with the specified number of rows and columns.
+
+        Parameters
+        ----------
+        rows : int
+            The number of rows in the matrix.
+        columns : int
+            The number of columns in the matrix.
+        dtype : type, optional
+            The data type of the matrix elements (default: int).
+        fill : Union[int, float, str, bool], optional
+            The value used to fill the matrix elements (default: 0)"""
+
         pass
 
     @overload
@@ -19,10 +32,28 @@ class Matrix:
         dtype: type = int,
         fill: Union[int, float, str, bool] = 0,
     ) -> None:
+        """Initializes a new matrix with the specified shape.
+
+        Parameters
+        ----------
+        shape : tuple[int, int]
+            The shape of the matrix, specified as a tuple (rows, columns).
+        dtype : type, optional
+            The data type of the matrix elements (default: int).
+        fill : Union[int, float, str, bool], optional
+            The value used to fill the matrix elements (default: 0)"""
+
         pass
 
     @overload
     def __init__(self, object: Iterable) -> None:
+        """Initializes a new matrix from an iterable object.
+
+        Parameters
+        ----------
+        object : Iterable
+            An iterable object containing the matrix elements"""
+
         pass
 
     def __init__(
@@ -172,7 +203,7 @@ class Matrix:
         def matrix_addition(A: Iterable, B: Iterable) -> Iterable:
             return [[a + b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
 
-        buffer = self.copy()
+        buffer = self.deep_copy()
 
         if isinstance(element, Matrix):
             if buffer.shape == element.shape:
@@ -199,7 +230,7 @@ class Matrix:
         def matrix_subtraction(A: Iterable, B: Iterable) -> Iterable:
             return [[a - b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
 
-        buffer = self.copy()
+        buffer = self.deep_copy()
 
         if isinstance(element, Matrix):
             if buffer.shape == element.shape:
@@ -223,7 +254,7 @@ class Matrix:
         return buffer
 
     def __mul__(self, element: Iterable) -> Self:
-        buffer = self.copy()
+        buffer = self.deep_copy()
 
         if isinstance(element, Matrix):
             if buffer.columns != element.rows:
@@ -258,7 +289,7 @@ class Matrix:
         return buffer
 
     def __pow__(self, exponent: int) -> Self:
-        buffer = self.copy()
+        buffer = self.deep_copy()
 
         if not isinstance(exponent, int):
             raise ValueError(
@@ -384,10 +415,14 @@ class Matrix:
 
     @property
     def size(self) -> int:
+        """Number of elements in matrix"""
+
         return self.rows * self.columns
 
     @property
     def shape(self) -> tuple[int, int]:
+        """Store current matrix shape"""
+
         return self.rows, self.columns
 
     @shape.setter
@@ -399,6 +434,8 @@ class Matrix:
 
     @property
     def dtype(self) -> type:
+        """Store element's current type"""
+
         return self.__dtype
 
     @dtype.setter
@@ -410,6 +447,8 @@ class Matrix:
 
     @property
     def columns(self) -> int:
+        """Number of columns in matrix"""
+
         return self.__columns
 
     @columns.setter
@@ -422,6 +461,8 @@ class Matrix:
 
     @property
     def rows(self) -> int:
+        """Number of rows in matrix"""
+
         return self.__rows
 
     @rows.setter
@@ -433,12 +474,29 @@ class Matrix:
             raise ValueError("`dl.Matrix.rows` property must be an integer")
 
     def change_dtype(self, new_dtype: type) -> Self:
+        """Changes the data type of the matrix.
+
+        Parameters
+        ----------
+        new_dtype : type
+            The new data type for the matrix"""
+
         self.dtype = new_dtype
         self._change_data_type(new_dtype)
 
         return self
 
     def fill(self, value: Union[int, float, str, bool]) -> Self:
+        """Fills the matrix with the specified value.
+
+        Parameters
+        ----------
+        value : int or float or str or bool
+            Value to fill the matrix with"""
+
+        if not has_same_type(self.dtype, value):
+            value = convert(value, self.dtype)
+
         for i in range(self.rows):
             for j in range(self.columns):
                 self.__data[i][j] = value
@@ -446,12 +504,34 @@ class Matrix:
         return self
 
     def set_precision(self, new_precision: int) -> None:
+        """Sets the precision for numerical values in the matrix.
+
+        Parameters
+        ----------
+        new_precision : int
+            The new precision value to set for numerical values.
+
+        Raises
+        ------
+        ValueError
+            If the provided precision is not an integer"""
+
         if isinstance(new_precision, int):
             self.__precision = new_precision
         else:
             raise ValueError("Number precision must be an integer")
 
     def identity(self) -> Self:
+        """Creates an identity matrix.
+
+        An identity matrix is a square matrix with ones on the main diagonal and zeros elsewhere.
+        The size of the identity matrix is determined by the maximum of the number of rows and columns of the current matrix.
+
+        Raises
+        ------
+        ValueError
+            If the size of the matrix is not a positive integer."""
+
         size = self.rows if self.rows > self.columns else self.columns
 
         if size <= 0:
@@ -461,8 +541,15 @@ class Matrix:
 
         return Matrix(data)
 
+    # def is_identity(self) -> bool:
+
     def transpoze(self) -> Self:
-        buffer = self.copy()
+        """Transposes the matrix.
+
+        The transpose of a matrix is obtained by interchanging its rows and columns.
+        This operation modifies the matrix in place"""
+
+        buffer = self.deep_copy()
 
         self.reshape(self.columns, self.rows)
 
@@ -473,16 +560,37 @@ class Matrix:
         return self
 
     def to_logical_matrix(self) -> Self:
+        """Convert current matrix to logical matrix ((0, 1)-matrix)
+
+        This function change all elements in matrix to bool and from this it follows that the matrix becomes a logical matrix
+        """
+
         self.change_dtype(bool)
 
         return self
 
     @overload
     def reshape(self, rows: int, columns: int) -> Self:
+        """Reshapes the matrix to the specified number of rows and columns
+
+        Parameters
+        ----------
+        rows : int
+            The number of rows for the reshaped matrix
+        columns : int
+            The number of columns for the reshaped matrix"""
+
         pass
 
     @overload
     def reshape(self, new_shape: tuple[int, int]) -> Self:
+        """Reshapes the matrix to the specified shape
+
+        Parameters
+        ----------
+        new_shape : tuple[int, int]
+            The new shape for the matrix"""
+
         pass
 
     def reshape(
@@ -512,9 +620,13 @@ class Matrix:
         return self
 
     def to_list(self) -> list[list[Union[int, float, str, bool]]]:
+        """Converts the matrix to a Python list"""
+
         return self.__data
 
     def to_tuple(self) -> tuple[tuple[Union[int, float, str, bool]]]:
+        """Converts the matrix to a Python tuple"""
+
         buffer = [tuple() for _ in range(self.rows)]
 
         for i, row in enumerate(self.__data):
@@ -523,4 +635,11 @@ class Matrix:
         return tuple(buffer)
 
     def copy(self) -> Self:
+        """Creates a copy of the matrix"""
+
+        return copy.copy(self)
+
+    def deep_copy(self) -> Self:
+        """Creates a deep copy of the matrix"""
+
         return copy.deepcopy(self)
