@@ -3,11 +3,22 @@ from datalab.utils import *
 
 class Matrix:
     @overload
-    def __init__(self, rows: int, columns: int, dtype: type = int) -> None:
+    def __init__(
+        self,
+        rows: int,
+        columns: int,
+        dtype: type = int,
+        fill: Union[int, float, str, bool] = 0,
+    ) -> None:
         pass
 
     @overload
-    def __init__(self, shape: tuple[int, int], dtype: type = int) -> None:
+    def __init__(
+        self,
+        shape: tuple[int, int],
+        dtype: type = int,
+        fill: Union[int, float, str, bool] = 0,
+    ) -> None:
         pass
 
     @overload
@@ -19,19 +30,25 @@ class Matrix:
         arg1: Optional[Union[Iterable, tuple[int, int]]] = None,
         arg2: Optional[Union[int, type]] = None,
         dtype: Optional[type] = int,
+        fill: Optional[Union[int, float, str, bool]] = 0,
     ) -> None:
         if (
             isinstance(arg1, tuple)
             and len(arg1) == 2
             and (isinstance(arg1[0], int) and isinstance(arg1[1], int))
         ):
-            self._initialize_data_structure(shape=arg1, dtype=dtype)
+            self._initialize_data_structure(shape=arg1, dtype=dtype, fill=fill)
 
         elif isinstance(arg1, int) and isinstance(arg2, int):
-            self._initialize_data_structure(shape=(arg1, arg2), dtype=dtype)
+            self._initialize_data_structure(shape=(arg1, arg2), dtype=dtype, fill=fill)
+
+        elif isinstance(arg1, (list, tuple)) and all(
+            isinstance(sublist, (list, tuple)) for sublist in arg1
+        ):
+            self._initialize_data_structure(object=arg1)
 
         else:
-            self._initialize_data_structure(object=arg1)
+            raise ValueError("Wrong parameters in Matrix initialization")
 
         self.__precision = 4
         self.__supported_types = int, float, str, bool
@@ -151,73 +168,115 @@ class Matrix:
                 "The index you are referring to must be of the form: object[int][int], or object[int, int]"
             )
 
-    def __add__(self, element: Iterable):
+    def __add__(self, element: Iterable) -> Self:
         def matrix_addition(A: Iterable, B: Iterable) -> Iterable:
             return [[a + b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
 
+        buffer = self.copy()
+
         if isinstance(element, Matrix):
-            if self.shape == element.shape:
-                self.__data = matrix_addition(self.__data, element)
+            if buffer.shape == element.shape:
+                buffer.__data = matrix_addition(self.__data, element)
             else:
                 raise ArithmeticError("Cannot add matrices with different shapes")
 
         elif isinstance(element, (list, tuple)):
-            if len(element) != self.rows or any(
-                len(row) != self.columns for row in element
+            if len(element) != buffer.rows or any(
+                len(row) != buffer.columns for row in element
             ):
                 raise ArithmeticError("Cannot add matrices with different shapes")
 
-            self.__data = matrix_addition(self.__data, element)
+            buffer.__data = matrix_addition(buffer.__data, element)
 
         else:
-            raise ValueError("You can only add matrix to another matrix")
+            raise ValueError(
+                "You can only add matrix to another matrix, list, or tuple"
+            )
 
-        return self
+        return buffer
 
-    def __sub__(self, element: Iterable):
+    def __sub__(self, element: Iterable) -> Self:
         def matrix_subtraction(A: Iterable, B: Iterable) -> Iterable:
             return [[a - b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
 
+        buffer = self.copy()
+
         if isinstance(element, Matrix):
-            if self.shape == element.shape:
-                self.__data = matrix_subtraction(self.__data, element)
+            if buffer.shape == element.shape:
+                buffer.__data = matrix_subtraction(buffer.__data, element)
             else:
                 raise ArithmeticError("Cannot subtract matrices with different shapes")
 
         elif isinstance(element, (list, tuple)):
-            if len(element) != self.rows or any(
-                len(row) != self.columns for row in element
+            if len(element) != buffer.rows or any(
+                len(row) != buffer.columns for row in element
             ):
                 raise ArithmeticError("Cannot subtract matrices with different shapes")
 
-            self.__data = matrix_subtraction(self.__data, element)
+            buffer.__data = matrix_subtraction(buffer.__data, element)
 
         else:
-            raise ValueError("You can only subtract a matrix from another matrix")
+            raise ValueError(
+                "You can only subtract a matrix from another matrix, list, or tuple"
+            )
 
-        return self
+        return buffer
 
-    def __mul__(self, element: Union[Iterable, int, float, str, bool]):
+    def __mul__(self, element: Iterable) -> Self:
+        buffer = self.copy()
+
         if isinstance(element, Matrix):
-            if self.columns != element.rows:
+            if buffer.columns != element.rows:
                 raise ArithmeticError(
                     "Cannot multiply matrices with incompatible dimensions"
                 )
-            self.__data = [
+            buffer.__data = [
                 [
                     sum(a * b for a, b in zip(row1, col2))
                     for col2 in zip(*element.__data)
                 ]
-                for row1 in self.__data
+                for row1 in buffer.__data
+            ]
+
+        elif isinstance(element, (list, tuple)):
+            if buffer.columns != len(element):
+                raise ArithmeticError(
+                    "Cannot multiply matrices with incompatible dimensions"
+                )
+
+            buffer.__data = [
+                [sum(a * b for a, b in zip(row1, col2)) for col2 in zip(*element)]
+                for row1 in buffer.__data
             ]
 
         elif isinstance(element, (int, float, str, bool)):
-            self.__data = [[element * a for a in row] for row in self.__data]
+            buffer.__data = [[element * a for a in row] for row in buffer.__data]
 
         else:
             raise ValueError("Invalid operand for matrix multiplication")
 
-        return self
+        return buffer
+
+    def __pow__(self, exponent: int) -> Self:
+        buffer = self.copy()
+
+        if not isinstance(exponent, int):
+            raise ValueError(
+                "Matrix exponentiation is only supported for integer exponents"
+            )
+
+        if exponent < 0:
+            raise ValueError(
+                "Matrix exponentiation is not supported for negative exponents"
+            )
+
+        if exponent == 0:
+            return buffer.identity()
+
+        for _ in range(exponent - 1):
+            buffer *= self
+
+        return buffer
 
     def _estimate_data_type(self, object: Iterable) -> type:
         type_counts = {int: 0, float: 0, str: 0, bool: 0}
@@ -238,8 +297,12 @@ class Matrix:
         else:
             return max(type_counts, key=type_counts.get)
 
-    def _fill_data(self, object: Optional[Iterable] = None) -> None:
-        empty_element = self._empty_element()
+    def _fill_data(
+        self,
+        object: Optional[Iterable] = None,
+        fill: Optional[Union[int, float, str, bool]] = None,
+    ) -> None:
+        empty_element = self._empty_element() if fill is None else fill
 
         self.__data = [
             [empty_element for _ in range(self.columns)] for _ in range(self.rows)
@@ -258,6 +321,7 @@ class Matrix:
         object: Optional[Iterable] = None,
         shape: Optional[tuple[int, int]] = None,
         dtype: Optional[type] = None,
+        fill: Optional[Union[int, float, str, bool]] = None,
     ) -> None:
         if object is not None:
             rows_count = len(object)
@@ -274,7 +338,7 @@ class Matrix:
         elif shape is not None:
             self.__rows, self.__columns = shape
             self.__dtype = dtype
-            self._fill_data()
+            self._fill_data(fill=fill)
 
         else:
             raise ValueError(
@@ -374,11 +438,44 @@ class Matrix:
 
         return self
 
+    def fill(self, value: Union[int, float, str, bool]) -> Self:
+        for i in range(self.rows):
+            for j in range(self.columns):
+                self.__data[i][j] = value
+
+        return self
+
     def set_precision(self, new_precision: int) -> None:
         if isinstance(new_precision, int):
             self.__precision = new_precision
         else:
             raise ValueError("Number precision must be an integer")
+
+    def identity(self) -> Self:
+        size = self.rows if self.rows > self.columns else self.columns
+
+        if size <= 0:
+            raise ValueError("Size must be a positive integer")
+
+        data = [[1 if i == j else 0 for j in range(size)] for i in range(size)]
+
+        return Matrix(data)
+
+    def transpoze(self) -> Self:
+        buffer = self.copy()
+
+        self.reshape(self.columns, self.rows)
+
+        for i in range(self.rows):
+            for j in range(self.columns):
+                self[i, j] = buffer[j, i]
+
+        return self
+
+    def to_logical_matrix(self) -> Self:
+        self.change_dtype(bool)
+
+        return self
 
     @overload
     def reshape(self, rows: int, columns: int) -> Self:
@@ -426,4 +523,4 @@ class Matrix:
         return tuple(buffer)
 
     def copy(self) -> Self:
-        return self
+        return copy.deepcopy(self)
