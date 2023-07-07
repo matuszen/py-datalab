@@ -1,7 +1,7 @@
 from datalab.Matrix import Matrix
 from datalab.Vector import Vector
 
-from functions import (
+from datalab.functions import (
     identity_matrix,
     zeros_matrix,
     zeros_vector,
