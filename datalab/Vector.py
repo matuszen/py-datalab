@@ -79,6 +79,71 @@ class Vector:
 
         return output
 
+    def __add__(self, element: Iterable) -> Self:
+        def vector_addition(A: Iterable, B: Iterable) -> Iterable:
+            return [a + b for a, b in zip(A, B)]
+
+        if isinstance(element, Vector):
+            if self.size == element.size:
+                self.__data = vector_addition(self.__data, element)
+            else:
+                raise ArithmeticError("Cannot add vectors with different sizes")
+
+        elif isinstance(element, (list, tuple)):
+            if len(element) != self.size:
+                raise ArithmeticError("Cannot add vectors with different sizes")
+
+            self.__data = vector_addition(self.__data, element)
+
+        else:
+            raise ValueError("You can only add vector to another vector, list or tuple")
+
+        return self
+
+    def __sub__(self, element: Iterable) -> Self:
+        def vector_subtraction(A: Iterable, B: Iterable) -> Iterable:
+            return [a - b for a, b in zip(A, B)]
+
+        if isinstance(element, Vector):
+            if self.size == element.size:
+                self.__data = vector_subtraction(self.__data, element)
+            else:
+                raise ArithmeticError("Cannot subtract vectors with different sizes")
+
+        elif isinstance(element, (list, tuple)):
+            if len(element) != self.size:
+                raise ArithmeticError("Cannot subtract vectors with different sizes")
+
+            self.__data = vector_subtraction(self.__data, element)
+
+        else:
+            raise ValueError(
+                "You can only subtract a vector from another vector, list or tuple"
+            )
+
+        return self
+
+    def __mul__(self, element: Iterable) -> Self:
+        if isinstance(element, Vector):
+            if self.size != element.size:
+                raise ArithmeticError("Cannot multiply vectors with different sizes")
+
+            self.__data = [a * b for a, b in zip(self.__data, element.__data)]
+
+        elif isinstance(element, (list, tuple)):
+            if self.size != len(element):
+                raise ArithmeticError("Cannot multiply vectors with different sizes")
+
+            self.__data = [a * b for a, b in zip(self.__data, element)]
+
+        elif isinstance(element, (int, float, str, bool)):
+            self.__data = [element * a for a in self.__data]
+
+        else:
+            raise ValueError("Invalid operand for vector multiplication")
+
+        return self
+
     def __setitem__(self, index: int, value: Union[int, float, str, bool]) -> None:
         if not isinstance(index, int):
             raise ValueError("Index value must be an integer")
