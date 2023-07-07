@@ -6,7 +6,7 @@ if sys.version_info < (3, 10):
 
 setup(
     name="py-datalab",
-    version="0.2.0",
+    version="0.2.1",
     author="Mateusz Nowak",
     author_email="mateusz.nowak.pol@gmail.com",
     description="This project provides classes for working with data in python. Actually there are two classes: Matrix and Vector.",
