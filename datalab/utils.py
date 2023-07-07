@@ -1,3 +1,5 @@
+from typing_extensions import Self
+
 from typing import (
     Iterable,
     Optional,
@@ -6,5 +8,3 @@ from typing import (
     Union,
     overload,
 )
-
-TypeVar("Subscriptable")

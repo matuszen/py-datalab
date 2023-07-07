@@ -104,7 +104,7 @@ class Matrix:
         return output
 
     def __setitem__(
-        self, index: Union[tuple, int], value: Union[int, float, str, bool]
+        self, index: Union[tuple, int], value: Union[list, int, float, str, bool]
     ) -> None:
         if (
             isinstance(index, tuple)
@@ -131,7 +131,9 @@ class Matrix:
         else:
             self.__data[row] = converted_value
 
-    def __getitem__(self, index: Union[tuple, int]) -> Union[int, float, str, bool]:
+    def __getitem__(
+        self, index: Union[tuple, int]
+    ) -> Union[list, int, float, str, bool]:
         if (
             isinstance(index, tuple)
             and isinstance(index[0], int)
@@ -217,12 +219,10 @@ class Matrix:
 
         return self
 
-    def _estimate_data_type(
-        self, data: list[list[Union[int, float, str, bool]]]
-    ) -> type:
+    def _estimate_data_type(self, object: Iterable) -> type:
         type_counts = {int: 0, float: 0, str: 0, bool: 0}
 
-        for row in data:
+        for row in object:
             for element in row:
                 if isinstance(element, int):
                     type_counts[int] += 1
@@ -368,9 +368,11 @@ class Matrix:
         else:
             raise ValueError("`dl.Matrix.rows` property must be an integer")
 
-    def change_dtype(self, new_dtype: type) -> str:
+    def change_dtype(self, new_dtype: type) -> Self:
         self.dtype = new_dtype
         self._change_data_type(new_dtype)
+
+        return self
 
     def set_precision(self, new_precision: int) -> None:
         if isinstance(new_precision, int):
@@ -379,18 +381,18 @@ class Matrix:
             raise ValueError("Number precision must be an integer")
 
     @overload
-    def reshape(self, rows: int, columns: int) -> None:
+    def reshape(self, rows: int, columns: int) -> Self:
         pass
 
     @overload
-    def reshape(self, new_shape: tuple[int, int]) -> None:
+    def reshape(self, new_shape: tuple[int, int]) -> Self:
         pass
 
     def reshape(
         self,
         arg1: Optional[Union[tuple[int, int], int]] = None,
         arg2: Optional[int] = None,
-    ) -> None:
+    ) -> Self:
         if (
             arg2 is None
             and isinstance(arg1, tuple)
@@ -410,6 +412,8 @@ class Matrix:
                 "Shape must be tuple of integers, or both rows and columns must be integers"
             )
 
+        return self
+
     def to_list(self) -> list[list[Union[int, float, str, bool]]]:
         return self.__data
 
@@ -421,5 +425,5 @@ class Matrix:
 
         return tuple(buffer)
 
-    def copy(self) -> list[list[Union[int, float, str, bool]]]:
-        return self.__data
+    def copy(self) -> Self:
+        return self

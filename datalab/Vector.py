@@ -72,7 +72,7 @@ class Vector:
 
         max_element_length = max(len(str(item)) for item in buffer)
 
-        output = ""
+        output = "\n"
 
         for value in buffer:
             output += f"│ {value}{' ' * (max_element_length - len(value) + 1)}│\n"
@@ -88,7 +88,7 @@ class Vector:
                 self.__data[index] = supported_type(value)
                 break
 
-    def __getitem__(self, index: int) -> object:
+    def __getitem__(self, index: int) -> Union[int, float, str, bool]:
         if not isinstance(index, int):
             raise ValueError("Index value must be an integer")
 
@@ -201,9 +201,11 @@ class Vector:
         else:
             raise ValueError("`dl.Vector.dtype` property must be an type object")
 
-    def change_dtype(self, new_dtype: type) -> str:
+    def change_dtype(self, new_dtype: type) -> Self:
         self.dtype = new_dtype
         self._change_data_type(new_dtype)
+
+        return self
 
     def set_precision(self, new_precision: int) -> None:
         if isinstance(new_precision, int):
@@ -217,5 +219,5 @@ class Vector:
     def to_tuple(self) -> tuple[Union[int, float, str, bool]]:
         return tuple(self.__data)
 
-    def copy(self) -> list[Union[int, float, str, bool]]:
-        return self.__data
+    def copy(self) -> Self:
+        return self
