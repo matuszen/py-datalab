@@ -481,7 +481,7 @@ class Matrix:
                     self.__data[i][j] = buffer[i][j]
                 except:
                     continue
-    
+
     @property
     def permanent(self) -> Union[int, float]:
         """The permanent of the matrix."""
@@ -660,6 +660,48 @@ class Matrix:
                 submatrix.__data[i][j] = self.__data[row_index][column_index]
 
         return submatrix
+
+    def to_lower_triangular(self) -> Self:
+        """Converts the matrix to lower triangular form.
+
+        Returns
+        -------
+        Matrix
+            The matrix in lower triangular form.
+
+        Notes
+        -----
+        In a lower triangular matrix, all elements above the main diagonal are set to 0.
+        """
+
+        result = self.deep_copy()
+
+        for i in range(result.rows):
+            for j in range(i + 1, result.columns):
+                result.__data[i][j] = 0
+
+        return result
+
+    def to_upper_triangular(self) -> Self:
+        """Converts the matrix to upper triangular form.
+
+        Returns
+        -------
+        Matrix
+            The matrix in upper triangular form.
+
+        Notes
+        -----
+        In an upper triangular matrix, all elements below the main diagonal are set to 0.
+        """
+
+        result = self.deep_copy()
+
+        for i in range(1, result.rows):
+            for j in range(i):
+                result.__data[i][j] = 0
+
+        return result
 
     def to_logical_matrix(self) -> Self:
         """Convert current matrix to logical matrix ((0, 1)-matrix)
