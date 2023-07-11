@@ -481,6 +481,60 @@ class Matrix:
                     self.__data[i][j] = buffer[i][j]
                 except:
                     continue
+    
+    @property
+    def permanent(self) -> Union[int, float]:
+        """The permanent of the matrix."""
+
+        if self.rows != self.columns:
+            raise ValueError("Permanent is only defined for square matrices.")
+
+        if self.size == 1:
+            return self.__data[0, 0]
+
+        result = 0
+        for permutation in self._permutations(range(self.rows)):
+            product = 1
+            for i, j in enumerate(permutation):
+                product *= self[i, j]
+            result += product
+
+        return result
+
+    def _permutations(self, last: Iterable) -> Iterable:
+        if len(last) == 1:
+            yield last
+        else:
+            for i in range(len(last)):
+                rest = list(last[:i]) + list(last[i + 1 :])
+                for p in self._permutations(rest):
+                    yield [last[i]] + p
+
+    @property
+    def determinant(self) -> Union[int, float]:
+        """The determinant of the matrix"""
+
+        if self.rows != self.columns:
+            raise ValueError("Determinant is only defined for square matrices.")
+
+        if self.size == 1:
+            return self.__data[0][0]
+
+        if self.rows == 2:
+            return (
+                self.__data[0][0] * self.__data[1][1]
+                - self.__data[0][1] * self.__data[1][0]
+            )
+
+        result = 0
+        for j in range(self.columns):
+            submatrix = self.submatrix(
+                range(1, self.rows),
+                [column for column in range(self.columns) if column != j],
+            )
+            result += self.__data[0][j] * submatrix.determinant() * (-1) ** j
+
+        return result
 
     def change_dtype(self, new_dtype: type) -> Self:
         """Changes the data type of the matrix.
@@ -575,80 +629,6 @@ class Matrix:
                 self[i, j] = buffer[j, i]
 
         return self
-
-    def permanent(self) -> Union[int, float]:
-        """
-        Calculates the permanent of the matrix.
-
-        Returns
-        -------
-        int or float
-            The calculated permanent of the matrix.
-
-        Raises
-        ------
-        ValueError
-            If the matrix is not square.
-        """
-
-        if self.rows != self.columns:
-            raise ValueError("Permanent is only defined for square matrices.")
-
-        if self.size == 1:
-            return self.__data[0, 0]
-
-        result = 0
-        for permutation in self._permutations(range(self.rows)):
-            product = 1
-            for i, j in enumerate(permutation):
-                product *= self[i, j]
-            result += product
-
-        return result
-
-    def _permutations(self, last: Iterable) -> Iterable:
-        if len(last) == 1:
-            yield last
-        else:
-            for i in range(len(last)):
-                rest = list(last[:i]) + list(last[i + 1 :])
-                for p in self._permutations(rest):
-                    yield [last[i]] + p
-
-    def determinant(self) -> Union[int, float]:
-        """Calculates the determinant of the matrix.
-
-        Returns
-        -------
-        int or float
-            The calculated determinant of the matrix.
-
-        Raises
-        ------
-        ValueError
-            If the matrix is not square."""
-
-        if self.rows != self.columns:
-            raise ValueError("Determinant is only defined for square matrices.")
-
-        if self.size == 1:
-            return self.__data[0][0]
-
-        if self.rows == 2:
-            return (
-                self.__data[0][0] * self.__data[1][1]
-                - self.__data[0][1] * self.__data[1][0]
-            )
-
-        result = 0
-        for j in range(self.columns):
-            submatrix = self.submatrix(
-                range(1, self.rows),
-                [column for column in range(self.columns) if column != j],
-            )
-            result += self.__data[0][j] * submatrix.determinant() * (-1) ** j
-
-        return result
 
     def submatrix(self, rows_index: Iterable, columns_index: Iterable) -> Self:
         """Creates and returns a submatrix by selecting the specified ranges of rows and columns.
