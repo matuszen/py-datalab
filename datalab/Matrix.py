@@ -536,6 +536,17 @@ class Matrix:
 
         return result
 
+    @property
+    def trace(self) -> Union[int, float]:
+        """Calculates the trace of a square matrix.
+
+        The trace of a square matrix is the sum of its diagonal elements."""
+
+        if self.rows != self.columns:
+            raise ValueError("Trace is only defined for square matrices.")
+
+        return sum(self[i, i] for i in range(self.rows))
+
     def change_dtype(self, new_dtype: type) -> Self:
         """Changes the data type of the matrix.
 
@@ -614,7 +625,7 @@ class Matrix:
 
         return True
 
-    def transpoze(self) -> Self:
+    def transpose(self) -> Self:
         """Transposes the matrix.
 
         The transpose of a matrix is obtained by interchanging its rows and columns.
@@ -628,6 +639,85 @@ class Matrix:
             for j in range(self.columns):
                 self[i, j] = buffer[j, i]
 
+        return self
+
+    def inverse(self) -> Self:
+        """Calculates the inverse of a square matrix.
+
+        Returns
+        -------
+        Matrix
+            The inverse matrix.
+
+        Raises
+        ------
+        ValueError
+            If the matrix is not square or it is singular (non-invertible).
+
+        Notes
+        -----
+        The matrix must be square and non-singular (invertible) to have an inverse."""
+
+        if self.rows != self.columns:
+            raise ValueError("Inverse is only defined for square matrices.")
+
+        determinant = self.determinant
+
+        if determinant == 0:
+            raise ValueError("Matrix is singular and does not have an inverse.")
+
+        adjugate = self.adjugate()
+
+        return adjugate * (1 / determinant)
+
+    def adjugate(self) -> Self:
+        """Calculates the adjugate of the matrix.
+
+        Raises
+        ------
+        ValueError
+            If the matrix is not square."""
+
+        if self.rows != self.columns:
+            raise ValueError("Adjugate is only defined for square matrices.")
+
+        cofactors = Matrix(self.shape)
+
+        for i in range(self.rows):
+            for j in range(self.columns):
+                submatrix = self.submatrix(
+                    [row for row in range(self.rows) if row != i],
+                    [col for col in range(self.columns) if col != j],
+                )
+                cofactor = (-1) ** (i + j) * submatrix.determinant
+                cofactors.__data[i][j] = cofactor
+
+        return cofactors.transpose()
+
+    def swap_rows(self, row1: int, row2: int) -> Self:
+        """Swaps two rows in the matrix.
+
+        Parameters
+        ----------
+        row1 : int
+            Index of the first row to swap.
+        row2 : int
+            Index of the second row to swap."""
+
+        self.__data[row1], self.__data[row2] = self.__data[row2], self.__data[row1]
+        return self
+
+    def scale_row(self, row: int, scalar: Union[int, float]) -> Self:
+        """Scales a row in the matrix by a scalar value.
+
+        Parameters
+        ----------
+        row : int
+            Index of the row to scale.
+        scalar : int or float
+            Scalar value to multiply the row by."""
+
+        self.__data[row] = [scalar * element for element in self.__data[row]]
         return self
 
     def submatrix(self, rows_index: Iterable, columns_index: Iterable) -> Self:
