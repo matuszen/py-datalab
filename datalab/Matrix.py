@@ -308,31 +308,23 @@ class Matrix:
             )
 
         if exponent == 0:
-            return buffer.identity()
+            if self.rows != self.columns:
+                raise ValueError(
+                    "Identity matrix must have same rows and columns number"
+                )
+
+            return Matrix(
+                [
+                    [1 if i == j else 0 for j in range(self.rows)]
+                    for i in range(self.rows)
+                ],
+                dtype=self.dtype,
+            )
 
         for _ in range(exponent - 1):
             buffer *= self
 
         return buffer
-
-    def _estimate_data_type(self, object: Iterable) -> type:
-        type_counts = {int: 0, float: 0, str: 0, bool: 0}
-
-        for row in object:
-            for element in row:
-                if isinstance(element, int):
-                    type_counts[int] += 1
-                elif isinstance(element, float):
-                    type_counts[float] += 1
-                elif isinstance(element, str):
-                    type_counts[str] += 1
-                elif isinstance(element, bool):
-                    type_counts[bool] += 1
-
-        if type_counts[int] > 0 and type_counts[float] > 0:
-            return float
-        else:
-            return max(type_counts, key=type_counts.get)
 
     def _fill_data(
         self,
@@ -352,6 +344,19 @@ class Matrix:
                         self.__data[i][j] = element
                     except IndexError:
                         self.__data[i][j] = empty_element
+
+    def _empty_element(self) -> Union[int, float, str, bool]:
+        if self.dtype == float:
+            return 0.0
+
+        elif self.dtype == str:
+            return ""
+
+        elif self.dtype == bool:
+            return False
+
+        else:
+            return 0
 
     def _initialize_data_structure(
         self,
@@ -382,42 +387,24 @@ class Matrix:
                 "Matrix._initilize_data_structure() has recived wrong parameters"
             )
 
-    def _empty_element(self) -> Union[int, float, str, bool]:
-        if self.dtype == float:
-            return 0.0
+    def _estimate_data_type(self, object: Iterable) -> type:
+        type_counts = {int: 0, float: 0, str: 0, bool: 0}
 
-        elif self.dtype == str:
-            return ""
+        for row in object:
+            for element in row:
+                if isinstance(element, int):
+                    type_counts[int] += 1
+                elif isinstance(element, float):
+                    type_counts[float] += 1
+                elif isinstance(element, str):
+                    type_counts[str] += 1
+                elif isinstance(element, bool):
+                    type_counts[bool] += 1
 
-        elif self.dtype == bool:
-            return False
-
+        if type_counts[int] > 0 and type_counts[float] > 0:
+            return float
         else:
-            return 0
-
-    def _adjust_dimensions(self) -> None:
-        buffer = self.__data.copy()
-
-        init_item = self._empty_element()
-
-        self.__data = [
-            [init_item for _ in range(self.columns)] for _ in range(self.rows)
-        ]
-
-        for i in range(self.rows):
-            for j in range(self.columns):
-                try:
-                    self.__data[i][j] = buffer[i][j]
-                except:
-                    continue
-
-    def _change_data_type(self, new_dtype: type) -> None:
-        if new_dtype not in self.__supported_types:
-            raise ValueError(
-                f"dl.Matrix.dtype must take one of this value: {self.__supported_types}"
-            )
-
-        self.__data = [[new_dtype(element) for element in row] for row in self.__data]
+            return max(type_counts, key=type_counts.get)
 
     @property
     def size(self) -> int:
@@ -479,6 +466,22 @@ class Matrix:
         else:
             raise ValueError("`dl.Matrix.rows` property must be an integer")
 
+    def _adjust_dimensions(self) -> None:
+        buffer = self.__data.copy()
+
+        init_item = self._empty_element()
+
+        self.__data = [
+            [init_item for _ in range(self.columns)] for _ in range(self.rows)
+        ]
+
+        for i in range(self.rows):
+            for j in range(self.columns):
+                try:
+                    self.__data[i][j] = buffer[i][j]
+                except:
+                    continue
+
     def change_dtype(self, new_dtype: type) -> Self:
         """Changes the data type of the matrix.
 
@@ -491,6 +494,14 @@ class Matrix:
         self._change_data_type(new_dtype)
 
         return self
+
+    def _change_data_type(self, new_dtype: type) -> None:
+        if new_dtype not in self.__supported_types:
+            raise ValueError(
+                f"dl.Matrix.dtype must take one of this value: {self.__supported_types}"
+            )
+
+        self.__data = [[new_dtype(element) for element in row] for row in self.__data]
 
     def fill(self, value: Union[int, float, str, bool]) -> Self:
         """Fills the matrix with the specified value.
@@ -564,6 +575,111 @@ class Matrix:
                 self[i, j] = buffer[j, i]
 
         return self
+
+    def permanent(self) -> Union[int, float]:
+        """
+        Calculates the permanent of the matrix.
+
+        Returns
+        -------
+        int or float
+            The calculated permanent of the matrix.
+
+        Raises
+        ------
+        ValueError
+            If the matrix is not square.
+        """
+
+        if self.rows != self.columns:
+            raise ValueError("Permanent is only defined for square matrices.")
+
+        if self.size == 1:
+            return self.__data[0, 0]
+
+        result = 0
+        for permutation in self._permutations(range(self.rows)):
+            product = 1
+            for i, j in enumerate(permutation):
+                product *= self[i, j]
+            result += product
+
+        return result
+
+    def _permutations(self, last: Iterable) -> Iterable:
+        if len(last) == 1:
+            yield last
+        else:
+            for i in range(len(last)):
+                rest = list(last[:i]) + list(last[i + 1 :])
+                for p in self._permutations(rest):
+                    yield [last[i]] + p
+
+    def determinant(self) -> Union[int, float]:
+        """Calculates the determinant of the matrix.
+
+        Returns
+        -------
+        int or float
+            The calculated determinant of the matrix.
+
+        Raises
+        ------
+        ValueError
+            If the matrix is not square."""
+
+        if self.rows != self.columns:
+            raise ValueError("Determinant is only defined for square matrices.")
+
+        if self.size == 1:
+            return self.__data[0][0]
+
+        if self.rows == 2:
+            return (
+                self.__data[0][0] * self.__data[1][1]
+                - self.__data[0][1] * self.__data[1][0]
+            )
+
+        result = 0
+        for j in range(self.columns):
+            submatrix = self.submatrix(
+                range(1, self.rows),
+                [column for column in range(self.columns) if column != j],
+            )
+            result += self.__data[0][j] * submatrix.determinant() * (-1) ** j
+
+        return result
+
+    def submatrix(self, rows_index: Iterable, columns_index: Iterable) -> Self:
+        """Creates and returns a submatrix by selecting the specified ranges of rows and columns.
+
+        Parameters
+        ----------
+        rows_index : Iterable
+            The range of row indices to include in the submatrix.
+        columns_index : Iterable
+            The range of column indices to include in the submatrix.
+
+        Returns
+        -------
+        Matrix
+            The submatrix with the specified ranges of rows and columns.
+
+        Notes
+        -----
+        This method creates a new matrix object with dimensions (len(rows_index), len(columns_index)),
+        where the rows and columns within the specified ranges are included. The elements of the submatrix
+        are obtained from the corresponding elements of the original matrix."""
+
+        sub_rows = len(rows_index)
+        sub_columns = len(columns_index)
+        submatrix = Matrix((sub_rows, sub_columns))
+
+        for i, row_index in enumerate(rows_index):
+            for j, column_index in enumerate(columns_index):
+                submatrix.__data[i][j] = self.__data[row_index][column_index]
+
+        return submatrix
 
     def to_logical_matrix(self) -> Self:
         """Convert current matrix to logical matrix ((0, 1)-matrix)
