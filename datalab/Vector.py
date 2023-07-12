@@ -222,6 +222,30 @@ class Vector:
         else:
             return 0
 
+    def _initialize_data_structure(
+        self,
+        object: Optional[Iterable] = None,
+        size: Optional[int] = None,
+        dtype: Optional[type] = None,
+        fill: Optional[Union[int, float, str, bool]] = None,
+    ) -> None:
+        if object is not None:
+            self.__size = len(object)
+            self.__dtype = self._estimate_data_type(object)
+
+            self._fill_data(object=object, fill=fill)
+
+        elif size is not None:
+            self.__size = size
+            self.__dtype = dtype
+
+            self._fill_data(fill=fill)
+
+        else:
+            raise ValueError(
+                "Matrix._initilize_data_structure() has recived wrong parameters"
+            )
+
     def _estimate_data_type(self, object: Iterable) -> type:
         type_counts = {int: 0, float: 0, str: 0, bool: 0}
 
@@ -256,29 +280,18 @@ class Vector:
                 except IndexError:
                     self.__data[i] = empty_element
 
-    def _initialize_data_structure(
-        self,
-        object: Optional[Iterable] = None,
-        size: Optional[int] = None,
-        dtype: Optional[type] = None,
-        fill: Optional[Union[int, float, str, bool]] = None,
-    ) -> None:
-        if object is not None:
-            self.__size = len(object)
-            self.__dtype = self._estimate_data_type(object)
+    @property
+    def size(self) -> int:
+        """Vector's length (number of elements)"""
+        return self.__size
 
-            self._fill_data(object=object, fill=fill)
-
-        elif size is not None:
-            self.__size = size
-            self.__dtype = dtype
-
-            self._fill_data(fill=fill)
-
+    @size.setter
+    def size(self, new_size: int) -> None:
+        if isinstance(new_size, int):
+            self.__size = new_size
+            self._adjust_size()
         else:
-            raise ValueError(
-                "Matrix._initilize_data_structure() has recived wrong parameters"
-            )
+            raise ValueError("Vector size must be an integer")
 
     def _adjust_size(self) -> None:
         buffer = self.__data.copy()
@@ -293,26 +306,6 @@ class Vector:
             except:
                 continue
 
-    def _change_data_type(self, new_dtype: type) -> None:
-        if new_dtype not in self.__supported_types:
-            raise ValueError(
-                f"dl.Vector.dtype must take one of this value: {self.__supported_types}"
-            )
-        self.__data = list(map(new_dtype, self.__data))
-
-    @property
-    def size(self) -> int:
-        """Vector's length (number of elements)"""
-        return self.__size
-
-    @size.setter
-    def size(self, new_size: int) -> None:
-        if isinstance(new_size, int):
-            self.__size = new_size
-            self._adjust_size()
-        else:
-            raise ValueError("Vector size must be an integer")
-
     @property
     def dtype(self) -> type:
         """Store element's current type"""
@@ -325,6 +318,126 @@ class Vector:
             self.__dtype = new_value
         else:
             raise ValueError("`dl.Vector.dtype` property must be an type object")
+
+    def sum(self) -> Union[int, float, str]:
+        """Calculates the sum of all elements in the Vector.
+
+        If elements has str type, method returns concatenated string of all elements.
+
+        Returns
+        -------
+        int or float or str
+            Sum of all elements in Vector
+
+        Raises
+        ------
+        ValueError
+            If dtype are not in (int, float, str, bool)"""
+
+        if self.dtype in (int, float, bool):
+            return sum(self.__data)
+
+        elif self.dtype == str:
+            return str(*self.__data)
+
+        else:
+            raise ValueError("Wrog dtype to call sum method")
+
+    def max_value(self) -> Union[int, float, str, bool]:
+        """Linear search algorithm for max value in Vector.
+
+        Returns
+        -------
+        int or float or str or bool
+            Element with maximal value in Vector
+
+        Raises
+        ------
+        ValueError
+            If Vector's size is 0"""
+
+        if self.size == 0:
+            raise ValueError("Vector without size, can't has max element")
+
+        elif self.size == 1:
+            return self.__data[0]
+
+        elif self.size == 2:
+            if self.__data[0] > self.__data[1]:
+                return self.__data[0]
+            else:
+                return self.__data[1]
+
+        elif self.is_empty():
+            return self.__data[0]
+
+        else:
+            current_max = self.__data[0]
+
+            for item in self.__data:
+                if item > current_max:
+                    current_max = item
+
+            return current_max
+
+    def min_value(self) -> Union[int, float, str, bool]:
+        """Linear search algorithm for min value in Vector.
+
+        Returns
+        -------
+        int or float or str or bool
+            Element with minimal value in Vector
+
+        Raises
+        ------
+        ValueError
+            If Vector's size is 0"""
+
+        if self.size == 0:
+            raise ValueError("Vector without size, can't has min element")
+
+        elif self.size == 1:
+            return self.__data[0]
+
+        elif self.size == 2:
+            if self.__data[0] < self.__data[1]:
+                return self.__data[0]
+            else:
+                return self.__data[1]
+
+        elif self.is_empty():
+            return self.__data[0]
+
+        else:
+            current_min = self.__data[0]
+
+            for item in self.__data:
+                if item < current_min:
+                    current_min = item
+
+            return current_min
+
+    def is_empty(self) -> bool:
+        """Checks if the Vector is empty (fullfiled with empty elements)"""
+
+        empty_element = self._empty_element()
+
+        for item in self.__data:
+            if item != empty_element:
+                return False
+
+        return True
+
+    def is_full(self) -> bool:
+        """Check if the Vector is full (all elements are filled)"""
+
+        empty_element = self._empty_element()
+
+        for item in self._data:
+            if item == empty_element:
+                return False
+
+        return True
 
     def fill(self, value: Union[int, float, str, bool]) -> Self:
         """Fills the vector with the specified value.
@@ -354,6 +467,13 @@ class Vector:
         self._change_data_type(new_dtype)
 
         return self
+
+    def _change_data_type(self, new_dtype: type) -> None:
+        if new_dtype not in self.__supported_types:
+            raise ValueError(
+                f"dl.Vector.dtype must take one of this value: {self.__supported_types}"
+            )
+        self.__data = list(map(new_dtype, self.__data))
 
     def set_precision(self, new_precision: int) -> None:
         """Sets the precision for numerical values in the vector.
