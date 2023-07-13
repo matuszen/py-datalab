@@ -18,33 +18,34 @@ class Vector:
         dtype : type, optional
             Data type of the vector elements. Default is int.
         fill : int or float or str or bool, optional
-            Value used to fill the vector. Default is 0"""
+            Value used to fill the vector. Default is 0."""
 
         pass
 
     @overload
-    def __init__(self, object: Iterable) -> None:
+    def __init__(self, object: Iterable, dtype: type = int) -> None:
         """Initializes a vector from an iterable object.
 
         Parameters
         ----------
         object : Iterable
-            Iterable object containing the data for the vector"""
+            Iterable object containing the data for the vector.
+        dtype : type, optional
+            Data type of the vector elements. Default is int."""
         pass
 
     def __init__(
         self,
         arg1: Optional[Union[Iterable, int]],
-        dtype: Optional[type] = int,
+        dtype: Optional[type] = None,
         fill: Optional[Union[int, float, str, bool]] = 0,
     ) -> None:
         if isinstance(arg1, int):
             self.__size = arg1
-            self.__dtype = dtype
             self._initialize_data_structure(size=arg1, dtype=dtype, fill=fill)
 
         else:
-            self._initialize_data_structure(object=arg1)
+            self._initialize_data_structure(object=arg1, dtype=dtype)
 
         self.__supported_types = int, float, str, bool
         self.__precision = 4
@@ -231,7 +232,11 @@ class Vector:
     ) -> None:
         if object is not None:
             self.__size = len(object)
-            self.__dtype = self._estimate_data_type(object)
+
+            if dtype is None:
+                self.__dtype = self._estimate_data_type(object)
+            else:
+                self.__dtype = dtype
 
             self._fill_data(object=object, fill=fill)
 
@@ -250,14 +255,14 @@ class Vector:
         type_counts = {int: 0, float: 0, str: 0, bool: 0}
 
         for element in object:
-            if isinstance(element, int):
-                type_counts[int] += 1
-            elif isinstance(element, float):
+            if isinstance(element, float):
                 type_counts[float] += 1
             elif isinstance(element, str):
                 type_counts[str] += 1
             elif isinstance(element, bool):
                 type_counts[bool] += 1
+            elif isinstance(element, int):
+                type_counts[int] += 1
 
         if type_counts[int] > 0 and type_counts[float] > 0:
             return float
@@ -483,6 +488,43 @@ class Vector:
                 count += 1
 
         return count
+
+    def equals(self, other: Self, only_data: bool = False) -> bool:
+        """Checks if the Vector is equal to another Vector.
+
+        By default, the method compares not only the data inside the Vector, but also all variables, e.g. dtype or size. To compare data only, set the only_data parameter to True
+
+        Parameters
+        ----------
+        other : Vector
+            The Vector to be compared
+
+        only_data : bool
+            If you need to compare only Vector content set True, default False"""
+
+        if self.size != other.size:
+            return False
+
+        if only_data:
+            if self.dtype == other.dtype:
+                if self.__data == other.__data:
+                    return True
+                else:
+                    return False
+
+            for i in range(self.size):
+                if self.__data[i] != convert(other.__data[i], self.dtype):
+                    return False
+
+            return True
+
+        if self.dtype != other.dtype:
+            return False
+
+        if self.__data != other.__data:
+            return False
+
+        return True
 
     def change_dtype(self, new_dtype: type) -> Self:
         """Changes the data type of the vector.
