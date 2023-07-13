@@ -286,8 +286,18 @@ class Vector:
                     self.__data[i] = empty_element
 
     @property
+    def magnitude(self) -> float:
+        """Calculates the magnitude (length) of the vector
+
+        Object's magnitude is the displayed result of an ordering (or ranking) of the class of objects to which it belongs.
+        """
+
+        return sum(a * a for a in self.__data) ** (1 / 2)
+
+    @property
     def size(self) -> int:
-        """Vector's length (number of elements)"""
+        """Vector's size (number of elements)"""
+
         return self.__size
 
     @size.setter
@@ -323,6 +333,132 @@ class Vector:
             self.__dtype = new_value
         else:
             raise ValueError("`dl.Vector.dtype` property must be an type object")
+
+    def distance_to(self, other: Self) -> float:
+        """Calculates the Euclidean distance between the vector and another vector.
+
+        Parameters
+        ----------
+        other : Vector
+            The other vector to calculate the distance to.
+
+        Returns
+        -------
+        float
+            The Euclidean distance between the two vectors.
+
+        Raises
+        ------
+        ValueError
+            If the sizes of the two vectors are different.
+        """
+
+        if self.size != other.size:
+            raise ValueError(
+                "Cannot calculate distance for vectors with different sizes."
+            )
+
+        return (sum((a - b) ** 2 for a, b in zip(self.__data, other.__data))) ** (1 / 2)
+
+    def dot_product(self, other: Self) -> Union[int, float]:
+        """Computes the dot product between the vector and another vector.
+
+        Parameters
+        ----------
+        other : Vector
+            The other vector to compute the dot product with.
+
+        Returns
+        -------
+        int or float
+            The dot product of the two vectors.
+
+        Raises
+        ------
+        ValueError
+            If the sizes of the two vectors are different, or if dtypes are not int or float
+        """
+
+        if self.size != other.size:
+            raise ValueError(
+                "Cannot compute dot product for vectors with different sizes."
+            )
+
+        if self.dtype and other.dtype not in (int, float):
+            raise ValueError(
+                "Cannot compute dot product for vectors with other dtypes than int and float"
+            )
+
+        dot_product = sum(a * b for a, b in zip(self.__data, other.__data))
+        return dot_product
+
+    def cross_product(self, other: Self) -> Self:
+        """Computes the cross product between the vector and another 3-dimensional vector.
+
+        Parameters
+        ----------
+        other : Vector
+            The other vector to compute the cross product with.
+
+        Returns
+        -------
+        Vector
+            The cross product vector.
+
+        Raises
+        ------
+        ValueError
+            If either vector is not 3-dimensional.
+        """
+
+        if self.size != 3 or other.size != 3:
+            raise ValueError("Cross product is only defined for 3-dimensional vectors.")
+
+        cross_product = Vector(
+            [
+                self[1] * other[2] - self[2] * other[1],
+                self[2] * other[0] - self[0] * other[2],
+                self[0] * other[1] - self[1] * other[0],
+            ]
+        )
+
+        return cross_product
+
+    def normalize(self) -> Self:
+        """Returns a normalized version of the vector (a unit vector in the same direction).
+
+        Returns
+        -------
+        Vector
+            The normalized vector."""
+
+        return self.deep_copy().scale(1 / self.magnitude)
+
+    def scale(self, factor: Union[int, float]) -> Self:
+        """Scales the vector by multiplying each element by the given factor.
+
+        Parameters
+        ----------
+        factor : int or float
+            The factor to scale the vector by.
+
+        Returns
+        -------
+        Vector
+            The scaled vector.
+
+        Raise
+        -----
+        ValueError
+            If factor parameter is not int or float."""
+
+        if not isinstance(factor, (int, float)):
+            raise ValueError("Scale factor must be int or float")
+
+        scaled_vector = self.deep_copy()
+        scaled_vector.__data = [element * factor for element in scaled_vector.__data]
+
+        return scaled_vector
 
     def sum(self) -> Union[int, float, str]:
         """Calculates the sum of all elements in the Vector.
