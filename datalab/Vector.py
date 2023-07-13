@@ -338,13 +338,18 @@ class Vector:
             return sum(self.__data)
 
         elif self.dtype == str:
-            return str(*self.__data)
+            result = ""
+
+            for item in self.__data:
+                result = f"{result}{item}"
+
+            return result
 
         else:
-            raise ValueError("Wrog dtype to call sum method")
+            raise ValueError("Vector has not supported dtype to call sum method")
 
     def max_value(self) -> Union[int, float, str, bool]:
-        """Linear search algorithm for max value in Vector.
+        """Linear search algorithm for maximal value in the Vector.
 
         Returns
         -------
@@ -357,7 +362,7 @@ class Vector:
             If Vector's size is 0"""
 
         if self.size == 0:
-            raise ValueError("Vector without size, can't has max element")
+            raise ValueError("Vector without size, cannot have a maximum element")
 
         elif self.size == 1:
             return self.__data[0]
@@ -381,7 +386,7 @@ class Vector:
             return current_max
 
     def min_value(self) -> Union[int, float, str, bool]:
-        """Linear search algorithm for min value in Vector.
+        """Linear search algorithm for minimal value in the Vector.
 
         Returns
         -------
@@ -394,7 +399,7 @@ class Vector:
             If Vector's size is 0"""
 
         if self.size == 0:
-            raise ValueError("Vector without size, can't has min element")
+            raise ValueError("Vector without size, cannot have a minimum element")
 
         elif self.size == 1:
             return self.__data[0]
@@ -433,7 +438,7 @@ class Vector:
 
         empty_element = self._empty_element()
 
-        for item in self._data:
+        for item in self.__data:
             if item == empty_element:
                 return False
 
@@ -454,6 +459,30 @@ class Vector:
             self.__data[i] = value
 
         return self
+
+    def count_zeros(self) -> int:
+        """Counts the number of empty elements in the Vector"""
+
+        empty_element = self._empty_element()
+        count = 0
+
+        for element in self.__data:
+            if element == empty_element:
+                count += 1
+
+        return count
+
+    def count_non_zeros(self) -> int:
+        """Counts the number of non empty elements in the Vector"""
+
+        empty_element = self._empty_element()
+        count = 0
+
+        for element in self.__data:
+            if element != empty_element:
+                count += 1
+
+        return count
 
     def change_dtype(self, new_dtype: type) -> Self:
         """Changes the data type of the vector.
