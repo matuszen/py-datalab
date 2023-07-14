@@ -326,6 +326,121 @@ class Matrix:
 
         return buffer
 
+    @overload
+    def set(
+        self,
+        row: int,
+        column: int,
+        new_value: Union[int, float, str, bool],
+    ) -> None:
+        """Sets the element at the specified row and column index to the given value.
+
+        Parameters
+        ----------
+        row : int
+            The row index of the element to set.
+        column : int
+            The column index of the element to set.
+        new_value : int or float or str or bool
+            The new value to set."""
+
+        pass
+
+    @overload
+    def set(
+        self,
+        position: tuple,
+        new_value: Union[int, float, str, bool],
+    ) -> None:
+        """Sets the element at the specified position (row, column) to the given value.
+
+        Parameters
+        ----------
+        position : tuple
+            The position (row, column) of the element to set.
+        new_value : int or float or str or bool
+            The new value to set."""
+
+        pass
+
+    def set(
+        self,
+        arg1: Union[int, tuple],
+        arg2: Union[int, float, str, bool],
+        arg3: Optional[Union[int, float, str, bool]],
+    ) -> None:
+        if isinstance(arg1, int) and isinstance(arg2, int):
+            self.__data[arg1][arg2] = arg3
+
+        elif (
+            isinstance(arg1, tuple)
+            and all(isinstance(element, int) for element in arg1)
+            and len(arg1) == 2
+        ):
+            self.__data[arg1[0]][arg1[1]] = arg2
+
+        else:
+            raise ValueError("Wrong parameters in set() method")
+
+    @overload
+    def get(
+        self,
+        row: int,
+        column: int,
+    ) -> Union[int, float, str, bool]:
+        """Returns the element at the specified row and column index.
+
+        Parameters
+        ----------
+        row : int
+            The row index of the element to retrieve.
+        column : int
+            The column index of the element to retrieve.
+
+        Returns
+        -------
+        int or float or str or bool
+            The element at the specified row and column index."""
+
+        pass
+
+    @overload
+    def get(
+        self,
+        position: tuple,
+    ) -> Union[int, float, str, bool]:
+        """Returns the element at the specified position (row, column) as a tuple.
+
+        Parameters
+        ----------
+        position : tuple
+            The position (row, column) of the element to retrieve.
+
+        Returns
+        -------
+        int or float or str or bool
+            The element at the specified position (row, column)."""
+
+        pass
+
+    def get(
+        self,
+        arg1: Union[tuple, int],
+        arg2: Optional[int],
+    ) -> Union[int, float, str, bool]:
+        if isinstance(arg1, int) and isinstance(arg2, int):
+            return self.__data[arg1][arg2]
+
+        elif (
+            isinstance(arg1, tuple)
+            and all(isinstance(element, int) for element in arg1)
+            and len(arg1) == 2
+        ):
+            return self.__data[arg1[0]][arg1[1]]
+
+        else:
+            raise ValueError("Wrong parameters in get() method")
+
     def _fill_data(
         self,
         object: Optional[Iterable] = None,

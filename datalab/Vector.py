@@ -210,6 +210,40 @@ class Vector:
 
         return self.__data[index]
 
+    def set(
+        self,
+        index: int,
+        new_value: Union[int, float, str, bool],
+    ) -> None:
+        """Sets the element at the specified index to the given value.
+
+        Parameters
+        ----------
+        index : int
+            The index of the element to set.
+        new_value : int or float or str or bool
+            The new value to set."""
+
+        self.__data[index] = new_value
+
+    def get(
+        self,
+        index: int,
+    ) -> Union[int, float, str, bool]:
+        """Returns the element at the specified index.
+
+        Parameters
+        ----------
+        index : int
+            The index of the element to retrieve.
+
+        Returns
+        -------
+        int or float or str or bool
+            The element at the specified index."""
+
+        return self.__data[index]
+
     def _empty_element(self) -> Union[int, float, str, bool]:
         if self.dtype == float:
             return 0.0
@@ -425,12 +459,7 @@ class Vector:
         return cross_product
 
     def normalize(self) -> Self:
-        """Returns a normalized version of the vector (a unit vector in the same direction).
-
-        Returns
-        -------
-        Vector
-            The normalized vector."""
+        """Returns a normalized version of the vector (a unit vector in the same direction)."""
 
         return self.deep_copy().scale(1 / self.magnitude)
 
