@@ -157,54 +157,6 @@ class Matrix:
 
         return output
 
-    def __setitem__(
-        self, index: Union[tuple, int], value: Union[list, int, float, str, bool]
-    ) -> None:
-        if (
-            isinstance(index, tuple)
-            and isinstance(index[0], int)
-            and isinstance(index[1], int)
-            and len(index) == 2
-        ):
-            row, column = index
-        elif isinstance(index, int):
-            row = index
-            column = None
-        else:
-            raise ValueError(
-                "The index you are referring to must be of the form: object[int][int], or object[int, int]"
-            )
-
-        for supported_type in self.__supported_types:
-            if self.dtype == supported_type:
-                converted_value = supported_type(value)
-                break
-
-        if column is not None:
-            self.__data[row][column] = converted_value
-        else:
-            self.__data[row] = converted_value
-
-    def __getitem__(
-        self, index: Union[tuple, int]
-    ) -> Union[list, int, float, str, bool]:
-        if (
-            isinstance(index, tuple)
-            and isinstance(index[0], int)
-            and isinstance(index[1], int)
-            and len(index) == 2
-        ):
-            rows, columns = index
-            return self.__data[rows][columns]
-
-        elif isinstance(index, int):
-            return self.__data[index]
-
-        else:
-            raise ValueError(
-                "The index you are referring to must be of the form: object[int][int], or object[int, int]"
-            )
-
     def __add__(self, element: Iterable) -> Self:
         def matrix_addition(A: Iterable, B: Iterable) -> Iterable:
             return [[a + b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
@@ -326,6 +278,13 @@ class Matrix:
 
         return buffer
 
+    def __setitem__(
+        self,
+        position: Union[int, tuple],
+        value: Union[int, float, str, bool, list],
+    ) -> None:
+        self.set(position, value)
+
     @overload
     def set(
         self,
@@ -343,7 +302,6 @@ class Matrix:
             The column index of the element to set.
         new_value : int or float or str or bool
             The new value to set."""
-
         pass
 
     @overload
@@ -360,27 +318,66 @@ class Matrix:
             The position (row, column) of the element to set.
         new_value : int or float or str or bool
             The new value to set."""
-
         pass
 
     def set(
         self,
-        arg1: Union[int, tuple],
+        arg1: Union[int, tuple[int, int]],
         arg2: Union[int, float, str, bool],
-        arg3: Optional[Union[int, float, str, bool]],
+        arg3: Optional[Union[int, float, str, bool]] = None,
     ) -> None:
-        if isinstance(arg1, int) and isinstance(arg2, int):
-            self.__data[arg1][arg2] = arg3
+        if (
+            arg3 is not None
+            and isinstance(arg1, int)
+            and isinstance(arg2, int)
+            and not isinstance(arg1, bool)
+            and not isinstance(arg2, bool)
+        ):
+            row, column, value = arg1, arg2, arg3
 
         elif (
             isinstance(arg1, tuple)
             and all(isinstance(element, int) for element in arg1)
             and len(arg1) == 2
         ):
-            self.__data[arg1[0]][arg1[1]] = arg2
+            (row, column), value = arg1, arg2
 
         else:
-            raise ValueError("Wrong parameters in set() method")
+            raise ValueError(
+                "The index you are referring to must be of the form: object[int][int], or object[int, int]"
+            )
+
+        if not has_same_type(value, self.dtype):
+            try:
+                value = convert(value, self.dtype)
+            except:
+                raise ValueError(
+                    "".join(
+                        (
+                            'Value of type "',
+                            str(type(value)).split("'")[1],
+                            '" cannot be insert into this Matrix',
+                        )
+                    )
+                )
+
+        if row >= self.rows:
+            raise IndexError(
+                f"Matrix has {self.rows} rows, you cannot appeal to {row} row"
+            )
+
+        if column >= self.columns:
+            raise IndexError(
+                f"Matrix has {self.columns} rows, you cannot appeal to {column} column"
+            )
+
+        self.__data[row][column] = value
+
+    def __getitem__(
+        self,
+        position: Union[int, tuple],
+    ) -> Union[int, float, str, bool, list]:
+        return self.get(position)
 
     @overload
     def get(
@@ -401,7 +398,6 @@ class Matrix:
         -------
         int or float or str or bool
             The element at the specified row and column index."""
-
         pass
 
     @overload
@@ -420,26 +416,33 @@ class Matrix:
         -------
         int or float or str or bool
             The element at the specified position (row, column)."""
-
         pass
 
     def get(
         self,
-        arg1: Union[tuple, int],
-        arg2: Optional[int],
+        arg1: Union[int, tuple[int, int]],
+        arg2: Optional[int] = None,
     ) -> Union[int, float, str, bool]:
-        if isinstance(arg1, int) and isinstance(arg2, int):
-            return self.__data[arg1][arg2]
+        if isinstance(arg1, int):
+            row, column = arg1, arg2
 
         elif (
             isinstance(arg1, tuple)
             and all(isinstance(element, int) for element in arg1)
             and len(arg1) == 2
+            and arg2 is None
         ):
-            return self.__data[arg1[0]][arg1[1]]
+            row, column = arg1
 
         else:
-            raise ValueError("Wrong parameters in get() method")
+            raise ValueError(
+                "The index you are referring to must be of the form: object[int][int], or object[int, int]"
+            )
+        if column is None:
+            return self.__data[row]
+
+        else:
+            return self.__data[row][column]
 
     def _fill_data(
         self,

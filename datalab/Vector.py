@@ -195,25 +195,17 @@ class Vector:
 
         return buffer
 
-    def __setitem__(self, index: int, value: Union[int, float, str, bool]) -> None:
-        if not isinstance(index, int):
-            raise ValueError("Index value must be an integer")
-
-        for supported_type in self.__supported_types:
-            if self.dtype == supported_type:
-                self.__data[index] = supported_type(value)
-                break
-
-    def __getitem__(self, index: int) -> Union[int, float, str, bool]:
-        if not isinstance(index, int):
-            raise ValueError("Index value must be an integer")
-
-        return self.__data[index]
+    def __setitem__(
+        self,
+        index: int,
+        value: Union[int, float, str, bool],
+    ) -> None:
+        self.set(index, value)
 
     def set(
         self,
         index: int,
-        new_value: Union[int, float, str, bool],
+        value: Union[int, float, str, bool],
     ) -> None:
         """Sets the element at the specified index to the given value.
 
@@ -224,7 +216,35 @@ class Vector:
         new_value : int or float or str or bool
             The new value to set."""
 
-        self.__data[index] = new_value
+        if not isinstance(index, int):
+            raise ValueError("Index value must be an int")
+
+        if not has_same_type(value, self.dtype):
+            try:
+                value = convert(value, self.dtype)
+            except:
+                raise ValueError(
+                    "".join(
+                        (
+                            'Value of type "',
+                            str(type(value)).split("'")[1],
+                            '" cannot be insert into this Vector',
+                        )
+                    )
+                )
+
+        if index >= self.size:
+            raise IndexError(
+                f"Vector has {self.size} elements, you cannot appeal to {index} element"
+            )
+
+        self.__data[index] = value
+
+    def __getitem__(
+        self,
+        index: int,
+    ) -> Union[int, float, str, bool]:
+        return self.get(index)
 
     def get(
         self,
@@ -241,6 +261,14 @@ class Vector:
         -------
         int or float or str or bool
             The element at the specified index."""
+
+        if not isinstance(index, int):
+            raise ValueError("Index value must be an int")
+
+        if index >= self.size:
+            raise IndexError(
+                f"Vector has {self.size} elements, you cannot appeal to {index} element"
+            )
 
         return self.__data[index]
 
