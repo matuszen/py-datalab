@@ -16,14 +16,6 @@ To work in your python project you only need to install it via pip:
 pip install py-datalab
 ```
 
-Or, to work on repository on your local machine:
-
-```shell
-git clone https://github.com/matuszen/Python-DataLab.git
-```
-
-Depend on your python version you need to install typing_extensions package
-
 ## Usage
 
 The Matrix class represents a matrix and provides various operations and methods to work with matrices. Here are the main features of the Matrix class:
@@ -39,13 +31,13 @@ import datalab as dl
 To create a new matrix, you need to provide the shape (number of rows and columns) and an optional data type. The default data type is int. Here's an example of creating a matrix:
 
 ```python
-matrix = dl.Matrix(3, 3, dtype=int)
-matrix = dl.Matrix((3, 3), dtype=int)
-matrix = dl.Matrix([[1, 2, 3], [5, 3], [2, 5, 3]])
+matrix = dl.matrix(3, 3)
+matrix = dl.matrix((3, 3), dtype=float)
+matrix = dl.matrix([[1, 2, 3], [5, 3], [2, 5, 3]])
 # Lib validates shape correctly, regardless of the size of the all lists
 
-vector = dl.Vector(4, dtype=float)
-vector = dl.Vector([1, 2, 3, 4, 5])
+vector = dl.vector(4, dtype=float)
+vector = dl.vector([1, 2, 3, 4, 5])
 ```
 
 ### Setting and Getting Elements
@@ -72,10 +64,8 @@ You can change the data type of the matrix using the change_dtype method. The ne
 
 ```python
 matrix.change_dtype(bool)
-vector.change_dtype(int)
 
 # Or make it via property
-matrix.dtype = bool
 vector.dtype = int
 ```
 
@@ -84,7 +74,6 @@ vector.dtype = int
 You can change the shape of the matrix using the reshape method. It takes a tuple (rows, columns) as the new shape.
 
 ```python
-matrix.reshape((2, 4))
 matrix.reshape(2, 4)
 
 vector.size = 5
