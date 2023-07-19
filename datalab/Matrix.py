@@ -85,12 +85,15 @@ class Matrix:
             self._initialize_data_structure(object=arg1, dtype=dtype)
 
         else:
-            raise ValueError("Wrong parameters in Matrix initialization")
+            raise TypeError("Wrong parameters in Matrix initialization")
 
         self.__precision = 4
         self.__supported_types = int, float, str, bool
 
     def __str__(self) -> str:
+        if self.rows == 0 or self.columns == 0:
+            return f"\n│ {' ' * self.columns}│\n"
+        
         buffer = [[" " for _ in range(self.columns)] for _ in range(self.rows)]
 
         for i, row in enumerate(self.__data):
@@ -156,101 +159,255 @@ class Matrix:
             output += "│\n"
 
         return output
+    
+    def __add__(
+        self,
+        object: Union[int, float, Iterable],
+    ) -> Self:
+        return self.addition(object)
 
-    def __add__(self, element: Iterable) -> Self:
+    def addition(
+        self,
+        object: Union[int, float, Iterable],
+    ) -> Self:
+        """Performs addition with another matrix or scalar value.
+
+        Parameters
+        ----------
+        object : int or float or Iterable or Matrix
+            The object to add to the matrix. It can be another Matrix, a scalar value (int or float),
+            a list or tuple representing a matrix, or a scalar value.
+
+        Returns
+        -------
+        Matrix
+            A new Matrix object containing the result of the addition.
+
+        Raises
+        ------
+        TypeError
+            If the provided object is not of a valid type for addition with the matrix.
+        ArithmeticError
+            If attempting to add matrices with different shapes.
+
+        Notes
+        -----
+        This method allows performing addition with another matrix or scalar value. 
+        If the provided object is a Matrix, the method performs element-wise addition. 
+        If it is a scalar value, the method adds the value to each element of the matrix. 
+        If the object is a list or tuple, it should represent a matrix, and element-wise addition is performed.
+        """
+        
         def matrix_addition(A: Iterable, B: Iterable) -> Iterable:
             return [[a + b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
 
         buffer = self.deep_copy()
 
-        if isinstance(element, Matrix):
-            if buffer.shape == element.shape:
-                buffer.__data = matrix_addition(self.__data, element)
-            else:
+        if isinstance(object, Matrix):
+            if buffer.shape != object.shape:
                 raise ArithmeticError("Cannot add matrices with different shapes")
+                
+            buffer.replace(matrix_addition(buffer, object))
 
-        elif isinstance(element, (list, tuple)):
-            if len(element) != buffer.rows or any(
-                len(row) != buffer.columns for row in element
+        elif isinstance(object, (list, tuple)):
+            if len(object) != buffer.rows or any(
+                len(row) != buffer.columns for row in object
             ):
                 raise ArithmeticError("Cannot add matrices with different shapes")
 
-            buffer.__data = matrix_addition(buffer.__data, element)
+            buffer.replace(matrix_addition(buffer, object))
+        
+        elif isinstance(object, (int, float)):
+            buffer.replace([[item + object for item in row] for row in buffer])
 
         else:
-            raise ValueError(
-                "You can only add matrix to another matrix, list, or tuple"
+            raise TypeError(
+                "You can only add matrix to another matrix, list, tuple or number"
             )
 
         return buffer
+    
+    def __sub__(
+        self,
+        object: Union[int, float, Iterable],
+    ) -> Self:
+        return self.substraction(object)
 
-    def __sub__(self, element: Iterable) -> Self:
+    def substraction(
+        self,
+        object: Union[int, float, Iterable],
+    ) -> Self:
+        """Performs subtraction with another matrix or scalar value.
+
+        Parameters
+        ----------
+        object : int or float or Iterable
+            The object to subtract from the matrix. It can be another Matrix, a scalar value (int or float),
+            a list or tuple representing a matrix, or a scalar value.
+
+        Returns
+        -------
+        Matrix
+            A new Matrix object containing the result of the subtraction.
+
+        Raises
+        ------
+        TypeError
+            If the provided object is not of a valid type for subtraction with the matrix.
+        ArithmeticError
+            If attempting to subtract matrices with different shapes.
+
+        Notes
+        -----
+        This method allows performing subtraction with another matrix or scalar value. 
+        If the provided object is a Matrix, the method performs element-wise subtraction. 
+        If it is a scalar value, the method subtracts the value from each element of the matrix. 
+        If the object is a list or tuple, it should represent a matrix, and element-wise subtraction is performed.
+        """
+    
         def matrix_subtraction(A: Iterable, B: Iterable) -> Iterable:
             return [[a - b for a, b in zip(row1, row2)] for row1, row2 in zip(A, B)]
 
         buffer = self.deep_copy()
 
-        if isinstance(element, Matrix):
-            if buffer.shape == element.shape:
-                buffer.__data = matrix_subtraction(buffer.__data, element)
-            else:
+        if isinstance(object, Matrix):
+            if buffer.shape != object.shape:
                 raise ArithmeticError("Cannot subtract matrices with different shapes")
+                
+            buffer.replace(matrix_subtraction(buffer, object))
 
-        elif isinstance(element, (list, tuple)):
-            if len(element) != buffer.rows or any(
-                len(row) != buffer.columns for row in element
+        elif isinstance(object, (list, tuple)):
+            if len(object) != buffer.rows or any(
+                len(row) != buffer.columns for row in object
             ):
                 raise ArithmeticError("Cannot subtract matrices with different shapes")
 
-            buffer.__data = matrix_subtraction(buffer.__data, element)
+            buffer.replace(matrix_subtraction(buffer, object))
+        
+        elif isinstance(object, (int, float)):
+            buffer.replace([[item - object for item in row] for row in buffer])
 
         else:
-            raise ValueError(
-                "You can only subtract a matrix from another matrix, list, or tuple"
+            raise TypeError(
+                "You can only subtract a matrix from another matrix, list, tuple, or number"
             )
 
         return buffer
+    
+    def __mul__(
+        self,
+        object: Union[int, float, str, bool, Iterable],
+    ) -> Self:
+        return self.multiplication(object)
 
-    def __mul__(self, element: Iterable) -> Self:
+    def multiplication(
+        self,
+        object: Union[int, float, str, bool, Iterable]
+    ) -> Self:
+        """Performs multiplication with another matrix, scalar value, or element-wise product.
+
+        Parameters
+        ----------
+        object : int or float or str or bool or Iterable
+            The object to multiply with the matrix. It can be another Matrix, a scalar value (int, float, str, or bool),
+            a list or tuple representing a matrix, or a scalar value.
+
+        Returns
+        -------
+        Matrix
+            A new Matrix object containing the result of the multiplication.
+
+        Raises
+        ------
+        TypeError
+            If the provided object is not of a valid type for multiplication with the matrix.
+        ArithmeticError
+            If attempting to multiply matrices with incompatible dimensions.
+
+        Notes
+        -----
+        This method allows performing multiplication with another matrix, scalar value, or element-wise product. 
+        If the provided object is a Matrix, the method performs matrix multiplication. 
+        If it is a scalar value, the method multiplies the value with each element of the matrix. 
+        If the object is a list or tuple, it should represent a matrix, and element-wise multiplication is performed.
+        """
+        
         buffer = self.deep_copy()
 
-        if isinstance(element, Matrix):
-            if buffer.columns != element.rows:
+        if isinstance(object, Matrix):
+            if buffer.columns != object.rows:
                 raise ArithmeticError(
                     "Cannot multiply matrices with incompatible dimensions"
                 )
-            buffer.__data = [
+                
+            buffer.replace([
                 [
                     sum(a * b for a, b in zip(row1, col2))
-                    for col2 in zip(*element.__data)
+                    for col2 in zip(*object)
                 ]
-                for row1 in buffer.__data
-            ]
+                for row1 in buffer
+            ])
 
-        elif isinstance(element, (list, tuple)):
-            if buffer.columns != len(element):
+        elif isinstance(object, (list, tuple)):
+            if buffer.columns != len(object):
                 raise ArithmeticError(
                     "Cannot multiply matrices with incompatible dimensions"
                 )
 
-            buffer.__data = [
-                [sum(a * b for a, b in zip(row1, col2)) for col2 in zip(*element)]
-                for row1 in buffer.__data
-            ]
+            buffer.replace([
+                [sum(a * b for a, b in zip(row1, col2)) for col2 in zip(*object)]
+                for row1 in buffer
+            ])
 
-        elif isinstance(element, (int, float, str, bool)):
-            buffer.__data = [[element * a for a in row] for row in buffer.__data]
+        elif isinstance(object, (int, float, str, bool)):
+            buffer.replace([[object * a for a in row] for row in buffer])
 
         else:
-            raise ValueError("Invalid operand for matrix multiplication")
+            raise TypeError("Invalid operand for matrix multiplication")
 
         return buffer
+    
+    def __pow__(
+        self,
+        exponent: int,
+    ) -> Self:
+        return self.power(exponent)
 
-    def __pow__(self, exponent: int) -> Self:
+    def power(
+        self,
+        exponent: int,
+    ) -> Self:
+        """Raises the matrix to the power of an integer exponent.
+
+        Parameters
+        ----------
+        exponent : int
+            The non-negative integer exponent to raise the matrix to.
+
+        Returns
+        -------
+        Matrix
+            A new Matrix object containing the result of the matrix exponentiation.
+
+        Raises
+        ------
+        TypeError
+            If the provided exponent is not an integer.
+        ValueError
+            If the exponent is negative or the matrix is not square for exponent 0.
+
+        Notes
+        -----
+        This method raises the matrix to the power of a non-negative integer exponent. 
+        If the exponent is 0, the method returns the identity matrix with the same number of rows and columns as the original matrix. 
+        If the exponent is greater than 0, the method repeatedly multiplies the matrix with itself (exponent - 1) times. 
+        If the exponent is not an integer or is negative, an error is raised.
+        """
+        
         buffer = self.deep_copy()
 
         if not isinstance(exponent, int):
-            raise ValueError(
+            raise TypeError(
                 "Matrix exponentiation is only supported for integer exponents"
             )
 
@@ -280,8 +437,8 @@ class Matrix:
 
     def __setitem__(
         self,
-        position: Union[int, tuple],
-        value: Union[int, float, str, bool, list],
+        position: Union[int, tuple[int, int]],
+        value: Union[int, float, str, bool],
     ) -> None:
         self.set(position, value)
 
@@ -307,7 +464,7 @@ class Matrix:
     @overload
     def set(
         self,
-        position: tuple,
+        position: tuple[int, int],
         new_value: Union[int, float, str, bool],
     ) -> None:
         """Sets the element at the specified position (row, column) to the given value.
@@ -343,7 +500,7 @@ class Matrix:
             (row, column), value = arg1, arg2
 
         else:
-            raise ValueError(
+            raise TypeError(
                 "The index you are referring to must be of the form: object[int][int], or object[int, int]"
             )
 
@@ -403,7 +560,7 @@ class Matrix:
     @overload
     def get(
         self,
-        position: tuple,
+        position: tuple[int, int],
     ) -> Union[int, float, str, bool]:
         """Returns the element at the specified position (row, column) as a tuple.
 
@@ -438,30 +595,78 @@ class Matrix:
             raise ValueError(
                 "The index you are referring to must be of the form: object[int][int], or object[int, int]"
             )
+            
         if column is None:
             return self.__data[row]
 
         else:
             return self.__data[row][column]
+        
+    def replace(
+        self,
+        object: Iterable,
+    ) -> None:
+        if isinstance(object, Matrix):
+            if self.shape == object.shape:
+                for i, row in enumerate(object):
+                    for j, element in enumerate(row):
+                        self.set(i, j, element)
 
+            else:
+                self.fill(self._empty_element())
+                
+                for i, row in enumerate(object):
+                    for j, element in enumerate(row):
+                        try:
+                            self.set(i, j, element)
+                        except IndexError:
+                            break
+        
+        elif isinstance(object, (list, tuple)):
+            self.fill(self._empty_element())
+            
+            for i, row in enumerate(object):
+                for j, element in enumerate(row):
+                    try:
+                        self.set(i, j, element)
+                    except IndexError:
+                        break
+            
     def _fill_data(
         self,
         object: Optional[Iterable] = None,
         fill: Optional[Union[int, float, str, bool]] = None,
     ) -> None:
-        empty_element = self._empty_element() if fill is None else fill
-
-        self.__data = [
-            [empty_element for _ in range(self.columns)] for _ in range(self.rows)
-        ]
+        element = self._empty_element() if fill is None else fill
+        
+        self.__data = [[element for _ in range(self.columns)] for _ in range(self.rows)]
 
         if object is not None:
             for i, row in enumerate(object):
-                for j, element in enumerate(row):
+                for j, item in enumerate(row):
                     try:
-                        self.__data[i][j] = element
+                        self.set(i, j, item)
                     except IndexError:
-                        self.__data[i][j] = empty_element
+                        break
+    
+    def fill(self, value: Union[int, float, str, bool]) -> Self:
+        """Fills the matrix with the specified value.
+
+        Parameters
+        ----------
+        value : int or float or str or bool
+            Value to fill the matrix with"""
+
+        if not has_same_type(self.dtype, value):
+            value = convert(value, self.dtype)
+        
+        print(self.__data)
+
+        for i in range(self.rows):
+            for j in range(self.columns):
+                self.set(i, j, value)
+        
+        return self
 
     def _empty_element(self) -> Union[int, float, str, bool]:
         if self.dtype == float:
@@ -484,16 +689,10 @@ class Matrix:
         fill: Optional[Union[int, float, str, bool]] = None,
     ) -> None:
         if object is not None:
-            rows_count = len(object)
-            buffer = [0 for _ in range(rows_count)]
-
-            for i, row in enumerate(object):
-                buffer[i] = len(row)
-
-            self.__rows = rows_count
-            self.__columns = max(buffer)
+            self.__rows = len(object)
+            self.__columns = max([len(row) for row in object])
             self.__dtype = self._estimate_data_type(object)
-            self._fill_data(object)
+            self._fill_data(object=object)
 
         elif shape is not None:
             self.__rows, self.__columns = shape
@@ -502,7 +701,7 @@ class Matrix:
 
         else:
             raise ValueError(
-                "Matrix._initilize_data_structure() has recived wrong parameters"
+                "Wrong paramters to initialize matrix structure"
             )
 
     def _estimate_data_type(self, object: Iterable) -> type:
@@ -538,10 +737,68 @@ class Matrix:
 
     @shape.setter
     def shape(self, new_shape: tuple[int, int]) -> None:
-        if isinstance(new_shape, tuple):
-            self.rows, self.columns = new_shape
+        self.reshape(new_shape)
+    
+    @overload
+    def reshape(self, rows: int, columns: int) -> Self:
+        """Reshapes the matrix to the specified number of rows and columns
+
+        Parameters
+        ----------
+        rows : int
+            The number of rows for the reshaped matrix
+        columns : int
+            The number of columns for the reshaped matrix"""
+
+        pass
+
+    @overload
+    def reshape(self, new_shape: tuple[int, int]) -> Self:
+        """Reshapes the matrix to the specified shape
+
+        Parameters
+        ----------
+        new_shape : tuple[int, int]
+            The new shape for the matrix"""
+
+        pass
+
+    def reshape(
+        self,
+        arg1: Optional[Union[tuple[int, int], int]] = None,
+        arg2: Optional[int] = None,
+    ) -> Self:
+        if (
+            arg2 is None
+            and isinstance(arg1, tuple)
+            and len(arg1) == 2
+            and all(isinstance(item, int) for item in arg1)
+        ):
+            self.__rows, self.__columns = arg1
+
+        elif isinstance(arg1, int) and isinstance(arg2, int):
+            self.__rows, self.__columns = arg1, arg2
+
         else:
-            raise ValueError("`dl.Matrix.shape` property must be a tuple of integers")
+            raise TypeError(
+                "Shape must be tuple of integers, or both rows and columns must be integers"
+            )
+            
+        self._adjust_dimensions()
+
+        return self
+    
+    def _adjust_dimensions(self) -> None:
+        buffer = self.copy()
+        
+        self._fill_data(fill=self._empty_element())
+
+        for i, row in enumerate(buffer):
+            for j, element in enumerate(row):
+                try:
+                    self.set(i, j, element)
+                except IndexError:
+                    break
 
     @property
     def dtype(self) -> type:
@@ -550,11 +807,35 @@ class Matrix:
         return self.__dtype
 
     @dtype.setter
-    def dtype(self, new_value: type) -> None:
-        if new_value in (int, float, str, bool):
-            self.__dtype = new_value
-        else:
-            raise ValueError("`dl.Matrix.dtype` property must be an type object")
+    def dtype(self, value: type) -> None:
+        self.change_dtype(value)
+    
+    def change_dtype(
+        self,
+        value: type
+    ) -> Self:
+        """Changes the data type of the matrix.
+
+        Parameters
+        ----------
+        value : type
+            The new data type for the matrix"""
+        
+        if not isinstance(value, type):
+            raise ValueError("dtype property must be an type object")
+        
+        if value not in self.__supported_types:
+            raise ValueError(
+                f"dtype property must take one of this values: {self.__supported_types}"
+            )
+
+        self.__dtype = value
+        
+        self.replace(
+            [[convert(element, value) for element in row] for row in self.__data]
+        )
+
+        return self
 
     @property
     def columns(self) -> int:
@@ -563,12 +844,35 @@ class Matrix:
         return self.__columns
 
     @columns.setter
-    def columns(self, new_value: int) -> None:
-        if isinstance(new_value, int):
-            self.__columns = new_value
-            self._adjust_dimensions()
-        else:
-            raise ValueError("`dl.Matrix.columns` property must be an integer")
+    def columns(
+        self,
+        value: int
+    ) -> None:
+        self.change_columns_count(value)
+    
+    def change_columns_count(
+        self,
+        value: int,
+    ) -> Self:
+        """Changes the number of columns in the matrix.
+
+        Parameters
+        ----------
+        value : int
+            The new number of columns for the matrix.
+
+        Raises
+        ------
+        TypeError
+            If the value is not an integer."""
+        
+        if not isinstance(value, int):
+            raise TypeError("Columns property must be an integer")
+        
+        self.__columns = value
+        self._adjust_dimensions()
+        
+        return self
 
     @property
     def rows(self) -> int:
@@ -577,38 +881,49 @@ class Matrix:
         return self.__rows
 
     @rows.setter
-    def rows(self, new_value: int) -> None:
-        if isinstance(new_value, int):
-            self.__rows = new_value
-            self._adjust_dimensions()
-        else:
-            raise ValueError("`dl.Matrix.rows` property must be an integer")
+    def rows(
+        self,
+        value: int
+    ) -> None:
+        self.change_rows_count(value)
+    
+    def change_rows_count(
+        self,
+        value: int,
+    ) -> Self:
+        """Changes the number of rows in the matrix.
 
-    def _adjust_dimensions(self) -> None:
-        buffer = self.__data.copy()
+        Parameters
+        ----------
+        value : int
+            The new number of rows for the matrix.
 
-        init_item = self._empty_element()
-
-        self.__data = [
-            [init_item for _ in range(self.columns)] for _ in range(self.rows)
-        ]
-
-        for i in range(self.rows):
-            for j in range(self.columns):
-                try:
-                    self.__data[i][j] = buffer[i][j]
-                except:
-                    continue
+        Raises
+        ------
+        TypeError
+            If the value is not an integer."""
+            
+        if not isinstance(value, int):
+            raise TypeError("Rows property must be an integer")
+        
+        self.__rows = value
+        self._adjust_dimensions()
+        
+        return self
 
     @property
     def permanent(self) -> Union[int, float]:
         """The permanent of the matrix."""
-
+        return self.get_permanent()
+    
+    def get_permanent(self) -> Union[int, float]:
+        """Calculate the permanent of the matrix."""
+        
         if self.rows != self.columns:
             raise ValueError("Permanent is only defined for square matrices.")
 
         if self.size == 1:
-            return self.__data[0, 0]
+            return self[0, 0]
 
         result = 0
         for permutation in self._permutations(range(self.rows)):
@@ -631,26 +946,33 @@ class Matrix:
     @property
     def determinant(self) -> Union[int, float]:
         """The determinant of the matrix"""
+        
+        self.get_determinant()
+    
+    def get_determinant(self) -> Union[int, float]:
+        """Calculate the determinant of the matrix"""
 
         if self.rows != self.columns:
             raise ValueError("Determinant is only defined for square matrices.")
 
-        if self.size == 1:
-            return self.__data[0][0]
-
-        if self.rows == 2:
-            return (
-                self.__data[0][0] * self.__data[1][1]
-                - self.__data[0][1] * self.__data[1][0]
-            )
-
-        result = 0
-        for j in range(self.columns):
-            submatrix = self.submatrix(
-                range(1, self.rows),
-                [column for column in range(self.columns) if column != j],
-            )
-            result += self.__data[0][j] * submatrix.determinant() * (-1) ** j
+        match self.size:
+            case 1:
+                result = self[0, 0]
+            
+            case 2:
+                result = (
+                    self[0, 0] * self[1, 1]
+                    - self[0, 1] * self[1, 0]
+                )
+            
+            case _:
+                result = 0
+                for j in range(self.columns):
+                    submatrix = self.submatrix(
+                        range(1, self.rows),
+                        [column for column in range(self.columns) if column != j],
+                    )
+                    result += self[0, j] * submatrix.determinant * (-1) ** j
 
         return result
 
@@ -661,47 +983,9 @@ class Matrix:
         The trace of a square matrix is the sum of its diagonal elements."""
 
         if self.rows != self.columns:
-            raise ValueError("Trace is only defined for square matrices.")
+            raise ArithmeticError("Trace is only defined for square matrices.")
 
         return sum(self[i, i] for i in range(self.rows))
-
-    def change_dtype(self, new_dtype: type) -> Self:
-        """Changes the data type of the matrix.
-
-        Parameters
-        ----------
-        new_dtype : type
-            The new data type for the matrix"""
-
-        self.dtype = new_dtype
-        self._change_data_type(new_dtype)
-
-        return self
-
-    def _change_data_type(self, new_dtype: type) -> None:
-        if new_dtype not in self.__supported_types:
-            raise ValueError(
-                f"dl.Matrix.dtype must take one of this value: {self.__supported_types}"
-            )
-
-        self.__data = [[new_dtype(element) for element in row] for row in self.__data]
-
-    def fill(self, value: Union[int, float, str, bool]) -> Self:
-        """Fills the matrix with the specified value.
-
-        Parameters
-        ----------
-        value : int or float or str or bool
-            Value to fill the matrix with"""
-
-        if not has_same_type(self.dtype, value):
-            value = convert(value, self.dtype)
-
-        for i in range(self.rows):
-            for j in range(self.columns):
-                self.__data[i][j] = value
-
-        return self
 
     def set_precision(self, new_precision: int) -> None:
         """Sets the precision for numerical values in the matrix.
@@ -716,10 +1000,10 @@ class Matrix:
         ValueError
             If the provided precision is not an integer"""
 
-        if isinstance(new_precision, int):
-            self.__precision = new_precision
-        else:
+        if not isinstance(new_precision, int):
             raise ValueError("Number precision must be an integer")
+        
+        self.__precision = new_precision
 
     def is_identity(self) -> bool:
         """Checks if the current matrix is an identity matrix.
@@ -886,7 +1170,7 @@ class Matrix:
 
         for i in range(result.rows):
             for j in range(i + 1, result.columns):
-                result.__data[i][j] = 0
+                result[i, j] = 0
 
         return result
 
@@ -907,7 +1191,7 @@ class Matrix:
 
         for i in range(1, result.rows):
             for j in range(i):
-                result.__data[i][j] = 0
+                result[i, j] = 0
 
         return result
 
@@ -921,56 +1205,6 @@ class Matrix:
 
         return self
 
-    @overload
-    def reshape(self, rows: int, columns: int) -> Self:
-        """Reshapes the matrix to the specified number of rows and columns
-
-        Parameters
-        ----------
-        rows : int
-            The number of rows for the reshaped matrix
-        columns : int
-            The number of columns for the reshaped matrix"""
-
-        pass
-
-    @overload
-    def reshape(self, new_shape: tuple[int, int]) -> Self:
-        """Reshapes the matrix to the specified shape
-
-        Parameters
-        ----------
-        new_shape : tuple[int, int]
-            The new shape for the matrix"""
-
-        pass
-
-    def reshape(
-        self,
-        arg1: Optional[Union[tuple[int, int], int]] = None,
-        arg2: Optional[int] = None,
-    ) -> Self:
-        if (
-            arg2 is None
-            and isinstance(arg1, tuple)
-            and isinstance(arg1[0], int)
-            and isinstance(arg1[1], int)
-            and len(arg1) == 2
-        ):
-            self.rows, self.columns = arg1
-            self._adjust_dimensions()
-
-        elif isinstance(arg1, int) and isinstance(arg2, int):
-            self.rows, self.columns = arg1, arg2
-            self._adjust_dimensions()
-
-        else:
-            raise ValueError(
-                "Shape must be tuple of integers, or both rows and columns must be integers"
-            )
-
-        return self
-
     def to_list(self) -> list[list[Union[int, float, str, bool]]]:
         """Converts the matrix to a Python list"""
 
@@ -978,13 +1212,8 @@ class Matrix:
 
     def to_tuple(self) -> tuple[tuple[Union[int, float, str, bool]]]:
         """Converts the matrix to a Python tuple"""
-
-        buffer = [tuple() for _ in range(self.rows)]
-
-        for i, row in enumerate(self.__data):
-            buffer[i] = tuple(row)
-
-        return tuple(buffer)
+        
+        return tuple([tuple(row) for row in self])
 
     def copy(self) -> Self:
         """Creates a copy of the matrix"""
