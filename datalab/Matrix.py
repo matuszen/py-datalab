@@ -103,8 +103,9 @@ class Matrix:
     ) -> None:
         
         if object is not None:
-            self.__rows = len(object)
-            self.__columns = max([len(row) for row in object])
+            self.__rows, self.__columns = (
+                len(object), max([len(row) for row in object])
+            )
             
             if dtype is None:
                 self.__dtype = self._estimate_data_type(object)
