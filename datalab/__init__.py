@@ -1,5 +1,5 @@
-from datalab.Matrix import Matrix
-from datalab.Vector import Vector
+# from datalab.Matrix import Matrix
+# from datalab.Vector import Vector
 
 from datalab.functions import (
     identity_matrix,
@@ -7,4 +7,6 @@ from datalab.functions import (
     zeros_vector,
     ones_matrix,
     ones_vector,
+    matrix,
+    vector,
 )

@@ -11,6 +11,8 @@ from typing import (
     Any,
 )
 
+IterableItemType = TypeVar("IterableItemType")
+
 
 def convert(value: Any, new_type: type) -> Any:
     """Converts the given value to the specified type

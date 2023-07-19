@@ -2,6 +2,111 @@ from datalab.utils import *
 from datalab.Matrix import Matrix
 from datalab.Vector import Vector
 
+@overload
+def matrix(
+    rows: int,
+    columns: int,
+    dtype: type = int,
+    fill: Union[int, float, str, bool] = 0,
+) -> Matrix:
+    """Initializes a new matrix with the specified number of rows and columns.
+
+    Parameters
+    ----------
+    rows : int
+        The number of rows in the matrix.
+    columns : int
+        The number of columns in the matrix.
+    dtype : type, optional
+        The data type of the matrix elements (default: int).
+    fill : Union[int, float, str, bool], optional
+        The value used to fill the matrix elements (default: 0)"""
+
+    pass
+
+@overload
+def matrix(
+    shape: tuple[int, int],
+    dtype: type = int,
+    fill: Union[int, float, str, bool] = 0,
+) -> Matrix:
+    """Initializes a new matrix with the specified shape.
+
+    Parameters
+    ----------
+    shape : tuple[int, int]
+        The shape of the matrix, specified as a tuple (rows, columns).
+    dtype : type, optional
+        The data type of the matrix elements (default: int).
+    fill : Union[int, float, str, bool], optional
+        The value used to fill the matrix elements (default: 0)"""
+
+    pass
+
+@overload
+def matrix(
+    object: Iterable,
+    dtype: type = IterableItemType,
+) -> Matrix:
+    """Initializes a new matrix from an iterable object.
+
+    Parameters
+    ----------
+    object : Iterable
+        An iterable object containing the matrix elements
+    dtype : type, optional
+        The data type of the matrix elements (default: element type from iterable object)"""
+
+    pass
+
+def matrix(
+    arg1: Optional[Union[Iterable, tuple[int, int]]] = None,
+    arg2: Optional[Union[int, type]] = None,
+    dtype: Optional[type] = None,
+    fill: Optional[Union[int, float, str, bool]] = 0,
+) -> Matrix:
+    return Matrix(arg1, arg2, dtype=dtype, fill=fill)
+
+@overload
+def vector(
+    size: int,
+    dtype: type = int,
+    fill: Union[int, float, str, bool] = 0,
+) -> Vector:
+    """Initializes a vector with the specified size, data type, and fill value.
+
+    Parameters
+    ----------
+    size : int
+        Size of the vector.
+    dtype : type, optional
+        Data type of the vector elements. Default is int.
+    fill : int or float or str or bool, optional
+        Value used to fill the vector. Default is 0."""
+
+    pass
+
+@overload
+def vector(
+    object: Iterable,
+    dtype: type = IterableItemType,
+) -> Vector:
+    """Initializes a vector from an iterable object.
+
+    Parameters
+    ----------
+    object : Iterable
+        Iterable object containing the data for the vector.
+    dtype : type, optional
+        Data type of the vector elements. Default is Iterable items type."""
+    pass
+
+def vector(
+    arg1: Optional[Union[Iterable, int]],
+    dtype: Optional[type] = None,
+    fill: Optional[Union[int, float, str, bool]] = 0,
+) -> Vector:
+    return Vector(arg1, dtype=dtype, fill=fill)
 
 @overload
 def zeros_matrix(rows: int, columns: int, dtype: Union[int, float] = int) -> Matrix:

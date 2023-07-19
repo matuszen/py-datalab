@@ -49,6 +49,50 @@ class Vector:
 
         self.__supported_types = int, float, str, bool
         self.__precision = 4
+    
+    def _initialize_data_structure(
+        self,
+        object: Optional[Iterable] = None,
+        size: Optional[int] = None,
+        dtype: Optional[type] = None,
+        fill: Optional[Union[int, float, str, bool]] = None,
+    ) -> None:
+        if object is not None:
+            self.__size = len(object)
+
+            if dtype is None:
+                self.__dtype = self._estimate_data_type(object)
+            else:
+                self.__dtype = dtype
+
+            self._fill_data(object=object, fill=fill)
+
+        elif size is not None:
+            self.__size = size
+            
+            if dtype is None:
+                self.__dtype = int
+            else:
+                self.__dtype = dtype
+
+            self._fill_data(fill=fill)
+
+        else:
+            raise ValueError(
+                "Wrong paramters to initialize Vector structure"
+            )
+
+    def _fill_data(
+        self,
+        object: Optional[Iterable] = None,
+        fill: Optional[Union[int, float, str, bool]] = None,
+    ) -> None:
+        element = self._empty_element() if fill is None else fill
+
+        self.__data = [element for _ in range(self.size)]
+
+        if object is not None:
+            self.replace(object)
 
     def __str__(self) -> str:
         buffer = [" " for _ in range(self.size)]
@@ -395,46 +439,6 @@ class Vector:
 
         else:
             return 0
-
-    def _initialize_data_structure(
-        self,
-        object: Optional[Iterable] = None,
-        size: Optional[int] = None,
-        dtype: Optional[type] = None,
-        fill: Optional[Union[int, float, str, bool]] = None,
-    ) -> None:
-        if object is not None:
-            self.__size = len(object)
-
-            if dtype is None:
-                self.__dtype = self._estimate_data_type(object)
-            else:
-                self.__dtype = dtype
-
-            self._fill_data(object=object, fill=fill)
-
-        elif size is not None:
-            self.__size = size
-            self.__dtype = dtype
-
-            self._fill_data(fill=fill)
-
-        else:
-            raise ValueError(
-                "Wrong paramters to initialize Vector structure"
-            )
-
-    def _fill_data(
-        self,
-        object: Optional[Iterable] = None,
-        fill: Optional[Union[int, float, str, bool]] = None,
-    ) -> None:
-        element = self._empty_element() if fill is None else fill
-
-        self.__data = [element for _ in range(self.size)]
-
-        if object is not None:
-            self.replace(object)
 
     def fill(self, value: Union[int, float, str, bool]) -> Self:
         """Fills the vector with the specified value.

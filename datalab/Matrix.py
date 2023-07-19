@@ -66,21 +66,25 @@ class Matrix:
         self,
         arg1: Optional[Union[Iterable, tuple[int, int]]] = None,
         arg2: Optional[Union[int, type]] = None,
-        dtype: Optional[type] = int,
+        dtype: Optional[type] = None,
         fill: Optional[Union[int, float, str, bool]] = 0,
     ) -> None:
         if (
             isinstance(arg1, tuple)
             and len(arg1) == 2
-            and (isinstance(arg1[0], int) and isinstance(arg1[1], int))
+            and all(isinstance(item, int) for item in arg1)
         ):
             self._initialize_data_structure(shape=arg1, dtype=dtype, fill=fill)
 
-        elif isinstance(arg1, int) and isinstance(arg2, int):
+        elif (
+            isinstance(arg1, int)
+            and isinstance(arg2, int)
+        ):
             self._initialize_data_structure(shape=(arg1, arg2), dtype=dtype, fill=fill)
 
-        elif isinstance(arg1, (list, tuple)) and all(
-            isinstance(sublist, (list, tuple)) for sublist in arg1
+        elif (
+            isinstance(arg1, (list, tuple))
+            and all(isinstance(sublist, (list, tuple)) for sublist in arg1)
         ):
             self._initialize_data_structure(object=arg1, dtype=dtype)
 
@@ -89,6 +93,59 @@ class Matrix:
 
         self.__precision = 4
         self.__supported_types = int, float, str, bool
+    
+    def _initialize_data_structure(
+        self,
+        object: Optional[Iterable] = None,
+        shape: Optional[tuple[int, int]] = None,
+        dtype: Optional[type] = None,
+        fill: Optional[Union[int, float, str, bool]] = None,
+    ) -> None:
+        
+        if object is not None:
+            self.__rows = len(object)
+            self.__columns = max([len(row) for row in object])
+            
+            if dtype is None:
+                self.__dtype = self._estimate_data_type(object)
+            else:
+                self.__dtype = dtype
+            
+            self._fill_data(object=object)
+
+        elif shape is not None:
+            self.__rows, self.__columns = shape
+            
+            if dtype is None:
+                self.__dtype = int
+            else:
+                self.__dtype = dtype
+            
+            self._fill_data(fill=fill)
+
+        else:
+            raise ValueError(
+                "Wrong paramters to initialize matrix structure"
+            )
+
+    def _estimate_data_type(self, object: Iterable) -> type:
+        type_counts = {int: 0, float: 0, str: 0, bool: 0}
+
+        for row in object:
+            for element in row:
+                if isinstance(element, int):
+                    type_counts[int] += 1
+                elif isinstance(element, float):
+                    type_counts[float] += 1
+                elif isinstance(element, str):
+                    type_counts[str] += 1
+                elif isinstance(element, bool):
+                    type_counts[bool] += 1
+
+        if type_counts[int] > 0 and type_counts[float] > 0:
+            return float
+        else:
+            return max(type_counts, key=type_counts.get)
 
     def __str__(self) -> str:
         if self.rows == 0 or self.columns == 0:
@@ -659,8 +716,6 @@ class Matrix:
 
         if not has_same_type(self.dtype, value):
             value = convert(value, self.dtype)
-        
-        print(self.__data)
 
         for i in range(self.rows):
             for j in range(self.columns):
@@ -680,48 +735,6 @@ class Matrix:
 
         else:
             return 0
-
-    def _initialize_data_structure(
-        self,
-        object: Optional[Iterable] = None,
-        shape: Optional[tuple[int, int]] = None,
-        dtype: Optional[type] = None,
-        fill: Optional[Union[int, float, str, bool]] = None,
-    ) -> None:
-        if object is not None:
-            self.__rows = len(object)
-            self.__columns = max([len(row) for row in object])
-            self.__dtype = self._estimate_data_type(object)
-            self._fill_data(object=object)
-
-        elif shape is not None:
-            self.__rows, self.__columns = shape
-            self.__dtype = dtype
-            self._fill_data(fill=fill)
-
-        else:
-            raise ValueError(
-                "Wrong paramters to initialize matrix structure"
-            )
-
-    def _estimate_data_type(self, object: Iterable) -> type:
-        type_counts = {int: 0, float: 0, str: 0, bool: 0}
-
-        for row in object:
-            for element in row:
-                if isinstance(element, int):
-                    type_counts[int] += 1
-                elif isinstance(element, float):
-                    type_counts[float] += 1
-                elif isinstance(element, str):
-                    type_counts[str] += 1
-                elif isinstance(element, bool):
-                    type_counts[bool] += 1
-
-        if type_counts[int] > 0 and type_counts[float] > 0:
-            return float
-        else:
-            return max(type_counts, key=type_counts.get)
 
     @property
     def size(self) -> int:
