@@ -107,7 +107,7 @@ class Vector:
         self,
         object: Union[int, float, Iterable],
     ) -> Self:
-        return self.add(object)
+        return self.addition(object)
 
     def addition(
         self,
@@ -328,7 +328,7 @@ class Vector:
             The new value to set."""
 
         if not isinstance(index, int):
-            raise ValueError("Index value must be an int")
+            raise TypeError("Index value must be an int")
 
         if not has_same_type(value, self.dtype):
             try:
@@ -374,7 +374,7 @@ class Vector:
             The element at the specified index."""
 
         if not isinstance(index, int):
-            raise ValueError("Index value must be an int")
+            raise TypeError("Index value must be an int")
 
         if index >= self.size:
             raise IndexError(
@@ -421,7 +421,7 @@ class Vector:
 
         else:
             raise ValueError(
-                "Matrix._initilize_data_structure() has recived wrong parameters"
+                "Wrong paramters to initialize Vector structure"
             )
 
     def _fill_data(
@@ -532,7 +532,7 @@ class Vector:
             If the new size is not an integer."""
 
         if not isinstance(new_size, int):
-            raise ValueError("Vector size must be an integer")
+            raise TypeError("Vector size must be an integer")
 
         buffer = self.copy()
 
@@ -563,7 +563,7 @@ class Vector:
             The new data type for the vector"""
 
         if not isinstance(new_dtype, type):
-            raise ValueError(f"New dtype must be an type object not {type(new_dtype)}")
+            raise TypeError(f"New dtype must be an type object not {type(new_dtype)}")
 
         if new_dtype not in self.__supported_types:
             raise ValueError(
@@ -635,7 +635,7 @@ class Vector:
             )
 
         if self.dtype not in (int, float) or other.dtype not in (int, float):
-            raise ValueError(
+            raise TypeError(
                 "Cannot compute dot product for vectors with other dtypes than int and float"
             )
 
@@ -697,7 +697,7 @@ class Vector:
             If factor parameter is not int or float."""
 
         if not isinstance(factor, (int, float)):
-            raise ValueError("Scale factor must be int or float")
+            raise TypeError("Scale factor must be int or float")
 
         return self.deep_copy() * factor
 
@@ -726,7 +726,7 @@ class Vector:
                 result = f"{result}{item}"
 
         else:
-            raise ValueError("Vector has not supported dtype to call sum method")
+            raise TypeError("Vector has not supported dtype to call sum method")
 
         return result
 
@@ -893,7 +893,7 @@ class Vector:
             If the provided precision is not an integer"""
 
         if not isinstance(new_precision, int):
-            raise ValueError("Number precision must be an integer")
+            raise TypeError("Number precision must be an integer")
 
         self.__precision = new_precision
 
