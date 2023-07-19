@@ -1,4 +1,4 @@
-from datalab.Utils import *
+from datalab.utils import *
 
 
 class Matrix:

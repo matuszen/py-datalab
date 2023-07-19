@@ -1,7 +1,7 @@
 from datalab.Matrix import Matrix
 from datalab.Vector import Vector
 
-from datalab.Utils import *
+from datalab.utils import *
 
 @overload
 def matrix(
@@ -370,7 +370,7 @@ def identity(shape: tuple[int, int], dtype: Union[int, float] = int) -> Matrix:
 
 def identity(
     arg1: Optional[Union[int, tuple[int, int]]],
-    arg2: Optional[int],
+    arg2: Optional[int] = None,
     dtype: Optional[Union[int, float]] = int,
 ) -> Matrix:
     """Creates an identity matrix of specified size and data type.

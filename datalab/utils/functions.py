@@ -1,5 +1,5 @@
-from datalab.Utils.types import *
-from datalab.Utils.libs import *
+from datalab.utils.types import *
+from datalab.utils.libs import *
 
 def convert(value: Any, new_type: type) -> Any:
     """Converts the given value to the specified type
