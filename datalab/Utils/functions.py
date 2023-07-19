@@ -1,4 +1,4 @@
-from datalab.utils import *
+from datalab.Utils import *
 from datalab.Matrix import Matrix
 from datalab.Vector import Vector
 

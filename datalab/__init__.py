@@ -1,7 +1,4 @@
-# from datalab.Matrix import Matrix
-# from datalab.Vector import Vector
-
-from datalab.functions import (
+from datalab.Utils.functions import (
     identity_matrix,
     zeros_matrix,
     zeros_vector,
