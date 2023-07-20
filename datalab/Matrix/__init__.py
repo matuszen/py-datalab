@@ -452,7 +452,9 @@ class Matrix:
         TypeError
             If the provided exponent is not an integer.
         ValueError
-            If the exponent is negative or the matrix is not square for exponent 0.
+            If the exponent is negative.
+        ArithmeticError
+            If the matrix is not square for exponent 0.
 
         Notes
         -----
@@ -475,9 +477,9 @@ class Matrix:
             )
 
         if exponent == 0:
-            if self.rows != self.columns:
-                raise ValueError(
-                    "Identity matrix must have same rows and columns number"
+            if not self.is_square():
+                raise ArithmeticError(
+                    "Identity matrix must be a square matrix"
                 )
 
             return Matrix(
@@ -517,6 +519,7 @@ class Matrix:
             The column index of the element to set.
         new_value : int or float or str or bool
             The new value to set."""
+            
         pass
 
     @overload
@@ -533,6 +536,7 @@ class Matrix:
             The position (row, column) of the element to set.
         new_value : int or float or str or bool
             The new value to set."""
+            
         pass
 
     def set(
@@ -613,6 +617,7 @@ class Matrix:
         -------
         int or float or str or bool
             The element at the specified row and column index."""
+            
         pass
 
     @overload
@@ -631,6 +636,7 @@ class Matrix:
         -------
         int or float or str or bool
             The element at the specified position (row, column)."""
+            
         pass
 
     def get(
@@ -737,11 +743,15 @@ class Matrix:
         else:
             return 0
 
-    @property
-    def size(self) -> int:
+    def number_of_elements(self) -> int:
         """Number of elements in matrix"""
 
         return self.rows * self.columns
+    
+    def sum(self) -> Union[int, float]:
+        """Sum of all elements in matrix"""
+        
+        return sum(sum(item) for item in self)
 
     @property
     def shape(self) -> tuple[int, int]:
@@ -833,10 +843,17 @@ class Matrix:
         Parameters
         ----------
         value : type
-            The new data type for the matrix"""
+            The new data type for the matrix.
+        
+        Raises
+        ------
+        TypeError
+            If value parameter is not type object
+        ValueError
+            If value parameter take value which is not supported"""
         
         if not isinstance(value, type):
-            raise ValueError("dtype property must be an type object")
+            raise TypeError("dtype property must be an type object")
         
         if value not in self.__supported_types:
             raise ValueError(
@@ -933,10 +950,10 @@ class Matrix:
     def get_permanent(self) -> Union[int, float]:
         """Calculate the permanent of the matrix."""
         
-        if self.rows != self.columns:
+        if not self.is_square():
             raise ValueError("Permanent is only defined for square matrices.")
 
-        if self.size == 1:
+        if self.number_of_elements() == 1:
             return self[0, 0]
 
         result = 0
@@ -959,17 +976,26 @@ class Matrix:
 
     @property
     def determinant(self) -> Union[int, float]:
-        """The determinant of the matrix"""
+        """The determinant of the matrix
         
-        self.get_determinant()
+        Determinant is only defined for square matrices."""
+        
+        return self.get_determinant()
     
     def get_determinant(self) -> Union[int, float]:
-        """Calculate the determinant of the matrix"""
+        """Calculate the determinant of the matrix
+        
+        Determinant is only defined for square matrices.
+        
+        Raises
+        ------
+        ArithemticError
+            If matrix is not square."""
 
-        if self.rows != self.columns:
-            raise ValueError("Determinant is only defined for square matrices.")
+        if not self.is_square():
+            raise ArithmeticError("Determinant is only defined for square matrices.")
 
-        match self.size:
+        match self.number_of_elements():
             case 1:
                 result = self[0, 0]
             
@@ -994,9 +1020,10 @@ class Matrix:
     def trace(self) -> Union[int, float]:
         """Calculates the trace of a square matrix.
 
-        The trace of a square matrix is the sum of its diagonal elements."""
+        The trace of a square matrix is the sum of its diagonal elements.
+        Can be calculate only for square matrices."""
 
-        if self.rows != self.columns:
+        if not self.is_square():
             raise ArithmeticError("Trace is only defined for square matrices.")
 
         return sum(self[i, i] for i in range(self.rows))
@@ -1011,11 +1038,11 @@ class Matrix:
 
         Raises
         ------
-        ValueError
+        TypeError
             If the provided precision is not an integer"""
 
         if not isinstance(new_precision, int):
-            raise ValueError("Number precision must be an integer")
+            raise TypeError("Number precision must be an integer")
         
         self.__precision = new_precision
 
@@ -1027,7 +1054,7 @@ class Matrix:
         bool
             True if the matrix is an identity matrix, False otherwise"""
 
-        if self.rows != self.columns:
+        if not self.is_square():
             return False
 
         for i in range(self.rows):
@@ -1040,14 +1067,24 @@ class Matrix:
                         return False
 
         return True
+    
+    def is_square(self) -> bool:
+        """Checks if the current matrix is square matrix.
+        
+        Number of columns must be the same as the number of rows."""
+        
+        if self.rows != self.columns:
+            return False
+        
+        return True
 
     def transpose(self) -> Self:
-        """Transposes the matrix.
+        """Transposes the current matrix.
 
         The transpose of a matrix is obtained by interchanging its rows and columns.
         This operation modifies the matrix in place"""
 
-        buffer = self.deep_copy()
+        buffer = self.copy()
 
         self.reshape(self.columns, self.rows)
 
@@ -1059,28 +1096,22 @@ class Matrix:
 
     def inverse(self) -> Self:
         """Calculates the inverse of a square matrix.
-
-        Returns
-        -------
-        Matrix
-            The inverse matrix.
+        
+        The matrix must be square and non-singular (invertible) to have an inverse.
 
         Raises
         ------
-        ValueError
+        ArithmeticError
             If the matrix is not square or it is singular (non-invertible).
+        """
 
-        Notes
-        -----
-        The matrix must be square and non-singular (invertible) to have an inverse."""
-
-        if self.rows != self.columns:
-            raise ValueError("Inverse is only defined for square matrices.")
+        if not self.is_square():
+            raise ArithmeticError("Inverse is only defined for square matrices.")
 
         determinant = self.determinant
 
         if determinant == 0:
-            raise ValueError("Matrix is singular and does not have an inverse.")
+            raise ArithmeticError("Matrix is singular and does not have an inverse.")
 
         adjugate = self.adjugate()
 
@@ -1091,11 +1122,11 @@ class Matrix:
 
         Raises
         ------
-        ValueError
+        ArithmeticError
             If the matrix is not square."""
 
-        if self.rows != self.columns:
-            raise ValueError("Adjugate is only defined for square matrices.")
+        if not self.is_square():
+            raise ArithmeticError("Adjugate is only defined for square matrices.")
 
         cofactors = Matrix(self.shape)
 
@@ -1106,21 +1137,25 @@ class Matrix:
                     [col for col in range(self.columns) if col != j],
                 )
                 cofactor = (-1) ** (i + j) * submatrix.determinant
-                cofactors.__data[i][j] = cofactor
+                cofactors[i][j] = cofactor
 
         return cofactors.transpose()
 
-    def swap_rows(self, row1: int, row2: int) -> Self:
+    def swap_rows(
+        self, 
+        first_row: int, 
+        second_row: int
+    ) -> Self:
         """Swaps two rows in the matrix.
 
         Parameters
         ----------
-        row1 : int
+        first_row : int
             Index of the first row to swap.
-        row2 : int
+        second_row : int
             Index of the second row to swap."""
 
-        self.__data[row1], self.__data[row2] = self.__data[row2], self.__data[row1]
+        self[first_row], self[second_row] = self[second_row], self[first_row]
         return self
 
     def scale_row(self, row: int, scalar: Union[int, float]) -> Self:
@@ -1133,11 +1168,16 @@ class Matrix:
         scalar : int or float
             Scalar value to multiply the row by."""
 
-        self.__data[row] = [scalar * element for element in self.__data[row]]
+        self[row] = [scalar * element for element in self[row]]
+        
         return self
 
     def submatrix(self, rows_index: Iterable, columns_index: Iterable) -> Self:
         """Creates and returns a submatrix by selecting the specified ranges of rows and columns.
+        
+        This method creates a new matrix object with dimensions (len(rows_index), len(columns_index)),
+        where the rows and columns within the specified ranges are included. The elements of the submatrix
+        are obtained from the corresponding elements of the original matrix.
 
         Parameters
         ----------
@@ -1149,65 +1189,39 @@ class Matrix:
         Returns
         -------
         Matrix
-            The submatrix with the specified ranges of rows and columns.
+            The submatrix with the specified ranges of rows and columns."""
 
-        Notes
-        -----
-        This method creates a new matrix object with dimensions (len(rows_index), len(columns_index)),
-        where the rows and columns within the specified ranges are included. The elements of the submatrix
-        are obtained from the corresponding elements of the original matrix."""
-
-        sub_rows = len(rows_index)
-        sub_columns = len(columns_index)
-        submatrix = Matrix((sub_rows, sub_columns))
+        submatrix = Matrix((len(rows_index), len(column_index)))
 
         for i, row_index in enumerate(rows_index):
             for j, column_index in enumerate(columns_index):
-                submatrix.__data[i][j] = self.__data[row_index][column_index]
+                submatrix[i, j] = self[row_index, column_index]
 
         return submatrix
 
     def to_lower_triangular(self) -> Self:
         """Converts the matrix to lower triangular form.
 
-        Returns
-        -------
-        Matrix
-            The matrix in lower triangular form.
-
-        Notes
-        -----
         In a lower triangular matrix, all elements above the main diagonal are set to 0.
         """
 
-        result = self.deep_copy()
+        for i in range(self.rows):
+            for j in range(i + 1, self.columns):
+                self[i, j] = 0
 
-        for i in range(result.rows):
-            for j in range(i + 1, result.columns):
-                result[i, j] = 0
-
-        return result
+        return self
 
     def to_upper_triangular(self) -> Self:
         """Converts the matrix to upper triangular form.
 
-        Returns
-        -------
-        Matrix
-            The matrix in upper triangular form.
-
-        Notes
-        -----
         In an upper triangular matrix, all elements below the main diagonal are set to 0.
         """
 
-        result = self.deep_copy()
-
-        for i in range(1, result.rows):
+        for i in range(1, self.rows):
             for j in range(i):
-                result[i, j] = 0
+                self[i, j] = 0
 
-        return result
+        return self
 
     def to_logical_matrix(self) -> Self:
         """Convert current matrix to logical matrix ((0, 1)-matrix)
@@ -1227,7 +1241,12 @@ class Matrix:
     def to_tuple(self) -> tuple[tuple[Union[int, float, str, bool]]]:
         """Converts the matrix to a Python tuple"""
         
-        return tuple([tuple(row) for row in self])
+        return (tuple(row) for row in self)
+    
+    def to_set(self):
+        """Converts the matrix to a Python set"""
+        
+        return set(set(row) for row in self)
 
     def copy(self) -> Self:
         """Creates a copy of the matrix"""
