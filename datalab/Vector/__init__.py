@@ -327,7 +327,7 @@ class Vector:
         ------
         TypeError
             If the exponent is not an integer.
-        TypeError
+        ValueError
             If the exponent is a negative value."""
 
         buffer = self.deep_copy()
@@ -338,7 +338,7 @@ class Vector:
             )
 
         if exponent < 0:
-            raise TypeError(
+            raise ValueError(
                 "Vector exponentiation is not supported for negative exponents"
             )
 
@@ -369,7 +369,16 @@ class Vector:
         index : int
             The index of the element to set.
         new_value : int or float or str or bool
-            The new value to set."""
+            The new value to set.
+        
+        Raises
+        ------
+        TypeError
+            If index parameter is not an int.
+        ValueError
+            If value cannot be inserted into matrix (wrong data types).
+        IndexError
+            If index parameter is out of vector's range."""
 
         if not isinstance(index, int):
             raise TypeError("Index value must be an int")
@@ -415,7 +424,14 @@ class Vector:
         Returns
         -------
         int or float or str or bool
-            The element at the specified index."""
+            The element at the specified index.
+        
+        Raises
+        ------
+        TypeError
+            If index parameter is not an int.
+        Index Error
+            If index parameter is out of vector's range."""
 
         if not isinstance(index, int):
             raise TypeError("Index value must be an int")
@@ -532,7 +548,7 @@ class Vector:
 
         Raises
         ------
-        ValueError
+        TypeError
             If the new size is not an integer."""
 
         if not isinstance(new_size, int):
@@ -564,7 +580,14 @@ class Vector:
         Parameters
         ----------
         new_dtype : type
-            The new data type for the vector"""
+            The new data type for the vector.
+        
+        Raises
+        ------
+        TypeError
+            If new_dtype parameter is not an type object.
+        ValueError
+            If new_dtype parameter store type which is not allowed to be vector's dtype."""
 
         if not isinstance(new_dtype, type):
             raise TypeError(f"New dtype must be an type object not {type(new_dtype)}")
@@ -608,7 +631,7 @@ class Vector:
         """
 
         if self.size != other.size:
-            raise ArithmeticError(
+            raise ValueError(
                 "Cannot calculate distance for vectors with different sizes."
             )
 
@@ -630,11 +653,13 @@ class Vector:
         Raises
         ------
         ValueError
-            If the sizes of the two vectors are different, or if dtypes are not int or float
+            If the sizes of the two vectors are different.
+        TypeError
+            If dtypes are not int or float.
         """
 
         if self.size != other.size:
-            raise ArithmeticError(
+            raise ValueError(
                 "Cannot compute dot product for vectors with different sizes."
             )
 
@@ -665,7 +690,7 @@ class Vector:
         """
 
         if self.size != 3 or other.size != 3:
-            raise ArithmeticError(
+            raise ValueError(
                 "Cross product is only defined for 3-dimensional vectors."
             )
 
@@ -697,7 +722,7 @@ class Vector:
 
         Raise
         -----
-        ValueError
+        TypeError
             If factor parameter is not int or float."""
 
         if not isinstance(factor, (int, float)):
@@ -717,8 +742,8 @@ class Vector:
 
         Raises
         ------
-        ValueError
-            If dtype are not in (int, float, str, bool)"""
+        TypeError
+            If dtype are not in supported types."""
 
         if self.dtype in (int, float, bool):
             result = sum(self)
@@ -893,7 +918,7 @@ class Vector:
 
         Raises
         ------
-        ValueError
+        TypeError
             If the provided precision is not an integer"""
 
         if not isinstance(new_precision, int):
@@ -910,6 +935,11 @@ class Vector:
         """Converts the vector to a Python tuple"""
 
         return tuple(self.__data)
+    
+    def to_set(self):
+        """Converts the vector to a Python set"""
+        
+        return set(self.__data)
 
     def copy(self) -> Self:
         """Creates a copy of the vector"""
