@@ -1,3 +1,5 @@
+from datalab import stat
+
 from datalab.functions import (
     zeros_matrix,
     zeros_vector,

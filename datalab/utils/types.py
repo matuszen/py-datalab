@@ -1,4 +1,6 @@
-from typing_extensions import Self
+from typing_extensions import Self, Literal
+
+from collections.abc import Sized
 
 from typing import (
     Iterable,

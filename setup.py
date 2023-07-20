@@ -1,5 +1,6 @@
 import sys
 from setuptools import setup, find_packages
+from Cython.Build import cythonize
 
 if sys.version_info < (3, 10):
     sys.exit("Sorry, Python < 3.10 is not supported")
@@ -12,6 +13,7 @@ setup(
     description="This project provides classes for working with data in python. Actually there are two classes: Matrix and Vector.",
     url="https://github.com/matuszen/Python-DataLab",
     packages=find_packages(),
+    ext_modules=cythonize("datalab/stat/func/basic.pyx"),
     install_requires=[
         "typing_extensions",
     ],
